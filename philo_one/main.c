@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kdustin <kdustin@student.21-school.ru>     +#+  +:+       +#+        */
+/*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 13:33:59 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/29 11:55:16 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/29 16:42:14 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,46 +24,48 @@ int	wait_for_threads(t_table *table)
 		{
 			status = pthread_join(table->thread, NULL);
 			if (status != 0)
-			{
-				printf("Can't create thread, status = %d\n", status);
-				exit(ERROR);
-			}
+				return (THREAD_ERROR);
 		}
 		table = table->right;
 	}
 	return (0);
 }
 
-int main(int argc, char **argv)
+int	exit_handler(t_data *data, t_table *table, int ret)
 {
-	t_data			*data;
-	t_table			*table;
-
-	if (init_mprint() < 0)
-		return (ERROR);
-	if (!(data = (t_data*)malloc(sizeof(t_data))))
-	{
-		delete_mprint();
-		return (ERROR);
-	}
-	if (parse(argc, argv, &data) < 0)
-	{
-		delete_mprint();
-		free(data);
-		return (ERROR);
-	}
-	if (!(table = init_table(data)))
-	{
-		delete_mprint();
-		free(data);
-		return (ERROR);
-	}
-	gettimeofday(&table->data->start_time, NULL);
-	start_threads(table);
-	monitor_death_status(table);
-	wait_for_threads(table);
-	delete_table(&table, NULL);
 	delete_mprint();
-	free(data);
-	return (0);
+	if (data)
+		free(data);
+	if (table)
+		delete_table(&table, NULL);
+	return (ret);
+}
+
+int	main(int argc, char **argv)
+{
+	t_data	*data;
+	t_table	*table;
+	int		error;
+
+	if ((error = init_mprint()) < 0)
+		return (error);
+	if (!(data = (t_data*)malloc(sizeof(t_data))))
+		return (exit_handler(NULL, NULL, MEM_ERROR));
+	if ((error = parse(argc, argv, &data)) < 0)
+		return (exit_handler(data, NULL, error));
+	if ((error = init_table(data, &table)) < 0)
+		return (exit_handler(data, NULL, error));
+	if (gettimeofday(&table->data->start_time, NULL) < 0)
+		return (exit_handler(data, table, TIME_ERROR));
+	if (start_threads(table) < 0)
+		return (exit_handler(data, table, THREAD_ERROR));
+	if ((error = monitor_death_status(table)) < 0)
+		return (exit_handler(data, table, error));
+	if (wait_for_threads(table) < 0)
+		return (exit_handler(data, table, THREAD_ERROR));
+	if (delete_table(&table, NULL) < 0)
+		return (exit_handler(data, table, MUTEX_ERROR));
+	if (delete_mprint() < 0)
+		return (exit_handler(data, table, TIME_ERROR));
+	return (exit_handler(data, NULL, 0));
 }

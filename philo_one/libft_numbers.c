@@ -3,37 +3,30 @@
 /*                                                        :::      ::::::::   */
 /*   libft_numbers.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kdustin <kdustin@student.21-school.ru>     +#+  +:+       +#+        */
+/*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 14:46:05 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/29 12:15:51 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/29 14:50:03 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_one.h"
 
-int	ft_isdigit(int c)
+int				ft_isdigit(int c)
 {
 	if (c >= '0' && c <= '9')
 		return (1);
 	return (0);
 }
 
-int	ft_isspace(int c)
-{
-	if (c == '\t' || c == '\n' || c == '\v' || c == '\f' || c == '\r' ||
-																	c == ' ')
-		return (1);
-	return (0);
-}
-
-uint64_t	ft_atoi(const char *str)
+uint64_t		ft_atoi(const char *str)
 {
 	uint64_t	num;
 	uint64_t	minus;
 
 	minus = 1;
-	while (ft_isspace(*str))
+	while (*str == '\t' || *str == '\n' || *str == '\v' || *str == '\f' ||
+			*str == '\r' || *str == ' ')
 		str++;
 	if (*str == '+')
 		str++;
@@ -49,13 +42,12 @@ uint64_t	ft_atoi(const char *str)
 	return (num);
 }
 
-uint64_t convert_uint(struct timeval time)
+uint64_t		convert_uint(struct timeval time)
 {
-	return((time.tv_sec * 1000) +
-			(time.tv_usec * 0.001));
+	return ((time.tv_sec * 1000) + (time.tv_usec * 0.001));
 }
 
-struct timeval convert(uint64_t ms)
+struct timeval	convert(uint64_t ms)
 {
 	struct timeval	result;
 
@@ -64,7 +56,7 @@ struct timeval convert(uint64_t ms)
 	return (result);
 }
 
-int sub_time(struct timeval *z, struct timeval x, struct timeval y)
+int				sub_time(struct timeval *z, struct timeval x, struct timeval y)
 {
 	int nsec;
 

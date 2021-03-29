@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   death_monitor.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kdustin <kdustin@student.21-school.ru>     +#+  +:+       +#+        */
+/*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/28 20:26:44 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/29 12:24:18 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/29 14:46:10 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,17 @@ int	kill_all(t_table *table)
 	return (0);
 }
 
+int	die(t_table *table)
+{
+	int error;
+
+	if ((error = mprint(table->data->start_time, table->philo->id, "died")) < 0)
+		return (PRINTF_ERROR);
+	if (pthread_mutex_unlock(&table->mutex))
+		return (MUTEX_ERROR);
+	return (kill_all(table));
+}
+
 int	monitor_death_status(t_table *table)
 {
 	struct timeval	cur_time;
@@ -41,19 +52,17 @@ int	monitor_death_status(t_table *table)
 	time_to_die = table->data->time_to_die;
 	while (table)
 	{
-		pthread_mutex_lock(&table->mutex);
+		if (pthread_mutex_lock(&table->mutex))
+			return (MUTEX_ERROR);
 		last_meal = table->philo->last_meal_time;
-		gettimeofday(&cur_time, NULL);
+		if (gettimeofday(&cur_time, NULL) < 0)
+			return (TIME_ERROR);
 		if (sub_time(&sub_result, cur_time, last_meal))
-			return (ERROR);
+			return (MATH_ERROR);
 		if (!sub_time(NULL, sub_result, time_to_die))
-		{
-			mprint(table->data->start_time, table->philo->id, "died");
-			pthread_mutex_unlock(&table->mutex);
-			kill_all(table);
-			return (0);
-		}
-		pthread_mutex_unlock(&table->mutex);
+			return (die(table));
+		if (pthread_mutex_unlock(&table->mutex))
+			return (MUTEX_ERROR);
 		table = table->right->right;
 	}
 	return (ERROR);

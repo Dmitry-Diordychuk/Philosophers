@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   table.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kdustin <kdustin@student.21-school.ru>     +#+  +:+       +#+        */
+/*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 20:13:43 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/29 09:33:33 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/29 16:43:41 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,13 +24,13 @@ int	start_threads(t_table *table)
 		{
 			status = pthread_create(&table->thread, NULL, philo_live, table);
 			if (status != 0)
-			{
-				printf("Can't create thread, status = %d\n", status);
-				exit(ERROR);
-			}
+				return (THREAD_ERROR);
 		}
 		table = table->right;
 	}
+	status = pthread_create(&table->thread, NULL, arbitrate, table);
+	if (status != 0)
+		return (THREAD_ERROR);
 	return (0);
 }
 
@@ -39,12 +39,12 @@ int	set_position(int i, t_table **pos, t_data *data)
 	if (i % 2)
 	{
 		if (!((*pos)->philo = invite_philo()))
-			return (ERROR);
+			return (MEM_ERROR);
 		(*pos)->place = PHILO;
 		if (pthread_mutex_init(&(*pos)->mutex, NULL))
 		{
 			free((*pos)->philo);
-			return (ERROR);
+			return (MUTEX_ERROR);
 		}
 		(*pos)->data = data;
 		return (0);
@@ -57,13 +57,13 @@ int	set_position(int i, t_table **pos, t_data *data)
 		(*pos)->philo = NULL;
 		(*pos)->place = FORK;
 		if (pthread_mutex_init(&(*pos)->mutex, NULL))
-			return (ERROR);
+			return (MUTEX_ERROR);
 		(*pos)->data = data;
 	}
 	return (0);
 }
 
-t_null	*delete_list_reverse(t_table **table)
+int	delete_list_reverse(t_table **table)
 {
 	t_table *temp;
 
@@ -72,28 +72,30 @@ t_null	*delete_list_reverse(t_table **table)
 		temp = (*table)->left;
 		if ((*table)->place == PHILO)
 			free((*table)->philo);
-		pthread_mutex_destroy(&(*table)->mutex);
+		if (pthread_mutex_destroy(&(*table)->mutex))
+			return (MUTEX_ERROR);
 		free(*table);
 		*table = temp;
 	}
 	(*table) = NULL;
-	return (NULL);
+	return (0);
 }
 
-t_null	*delete_table(t_table **table, t_table **cur)
+int	delete_table(t_table **table, t_table **cur)
 {
 	if (table && *table)
 	{
 		(*table)->right->left = NULL;
 		(*table)->right = NULL;
-		delete_list_reverse(table);
+		if (delete_list_reverse(table) < 0)
+			return (MUTEX_ERROR);
 	}
 	if (cur && *cur)
 		free(*cur);
-	return (NULL);
+	return (0);
 }
 
-t_table *init_table(t_data *data)
+int	init_table(t_data *data, t_table **ret_table)
 {
 	t_table		*cur;
 	t_table		*prev;
@@ -109,8 +111,7 @@ t_table *init_table(t_data *data)
 		if (set_position(i++, &cur, data) < 0)
 			return (delete_table(&prev, &cur));
 		cur->right = NULL;
-		cur->left = prev;
-		if (prev)
+		if ((cur->left = prev))
 			prev->right = cur;
 		prev = cur;
 	}
@@ -119,5 +120,6 @@ t_table *init_table(t_data *data)
 		cur = cur->left;
 	cur->left = last;
 	last->right = cur;
-	return (cur);
+	*ret_table = cur;
+	return (0);
 }
