@@ -6,13 +6,13 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 13:33:59 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/30 13:35:14 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/30 22:07:34 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_one.h"
 
-int delete_forks(t_fork **forks, size_t n)
+int		delete_forks(t_fork **forks, size_t n)
 {
 	size_t i;
 
@@ -29,37 +29,7 @@ int delete_forks(t_fork **forks, size_t n)
 	return (MEM_ERROR);
 }
 
-int delete_philos(t_philo **philos, size_t n)
-{
-	size_t i;
-
-	i = 0;
-	if (i < n)
-	{
-		i = 0;
-		free(philos);
-		i++;
-	}
-	return (MEM_ERROR);
-}
-
-int invite_philos(t_philo ***philos)
-{
-	size_t	i;
-
-	if (!((*philos) = (t_philo**)malloc(sizeof(t_philo*) * g_data->philos_num)))
-		return (MEM_ERROR);
-	i = 0;
-	while (i < g_data->philos_num)
-	{
-		if (!((*philos)[i] = invite_philo()))
-			return (delete_philos((*philos), i));
-		i++;
-	}
-	return (0);
-}
-
-t_fork *serve_fork()
+t_fork	*serve_fork()
 {
 	static int	i;
 	t_fork		*new_fork;
@@ -77,7 +47,7 @@ t_fork *serve_fork()
 	return (new_fork);
 }
 
-int set_table(t_philo **philos, t_fork ***forks)
+int		set_table(t_philo **philos, t_fork ***forks)
 {
 	size_t	i;
 	size_t	n;
@@ -97,52 +67,68 @@ int set_table(t_philo **philos, t_fork ***forks)
 	return (0);
 }
 
-int		start_threads(t_philo **philos)
+int		start_threads(t_philo **philos, pthread_t **death_timers)
 {
-	size_t i;
+	size_t		i;
 
+	if (!(*death_timers = (pthread_t*)malloc(sizeof(pthread_t))))
+		return (MEM_ERROR);
+	set_done(FALSE);
 	i = 0;
+	get_time(&g_data->start_time);
 	while (i < g_data->philos_num)
 	{
 		if (pthread_create(&philos[i]->thread, NULL, philo_live, philos[i]))
+			return (THREAD_ERROR);
+		if (pthread_create(&(*death_timers)[i], NULL, run_death_timer, philos[i]))
 			return (THREAD_ERROR);
 		i++;
 	}
 	return (0);
 }
 
-int	exit_handler(int ret, t_philo **philos, t_fork **forks)
+int		exit_handler(int ret, t_philo **philos, t_fork **forks, pthread_t *dts)
 {
 	delete_mprint();
 	if (philos)
 		delete_philos(philos, g_data->philos_num);
 	if (forks)
 		delete_forks(forks, g_data->philos_num);
+	size_t i;
+	i = -1;
+	while (++i < g_data->philos_num)
+		pthread_detach(dts[i]);
+	free(dts);
 	if (g_data)
 		free(g_data);
 	return (ret);
 }
 
-int	main(int argc, char **argv)
+int		main(int argc, char **argv)
 {
-	t_philo	**philos;
-	t_fork	**forks;
-	int		error;
+	t_philo		**philos;
+	t_fork		**forks;
+	pthread_t	*death_timers;
+	int			error;
 
 	philos = NULL;
 	if ((error = init_mprint()) < 0)
 		return (error);
 	if (!(g_data = (t_data*)malloc(sizeof(t_data))))
-		return (exit_handler(MEM_ERROR, NULL, NULL));
+		return (exit_handler(MEM_ERROR, NULL, NULL, NULL));
 	if ((error = parse(argc, argv, &g_data)) < 0)
-		return (exit_handler(MEM_ERROR, NULL, NULL));
+		return (exit_handler(error, NULL, NULL, NULL));
+	if (pthread_mutex_init(&g_data->mutex_done, NULL))
+		return (exit_handler(MUTEX_ERROR, NULL, NULL, NULL));
 	if ((error = invite_philos(&philos)) < 0)
-		return (exit_handler(MEM_ERROR, NULL, NULL));
+		return (exit_handler(error, NULL, NULL, NULL));
 	if ((error = set_table(philos, &forks)) < 0)
-		return (exit_handler(MEM_ERROR, philos, NULL));
-	if (start_threads(philos) < 0)
-		return (exit_handler(THREAD_ERROR, philos, forks));
-	if ((error = monitor(philos)) < 0)
-		return (exit_handler(THREAD_ERROR, philos, forks));
-	return (exit_handler(TIME_ERROR, philos, forks));
+		return (exit_handler(error, philos, NULL, NULL));
+	if ((error = start_threads(philos, &death_timers) < 0))
+		return (exit_handler(error, philos, forks, NULL));
+	while (!get_done())
+		usleep(10000);
+	if (pthread_mutex_destroy(&g_data->mutex_done))
+		return (exit_handler(MUTEX_ERROR, NULL, NULL, NULL));
+	return (exit_handler(0, philos, forks, death_timers));
 }

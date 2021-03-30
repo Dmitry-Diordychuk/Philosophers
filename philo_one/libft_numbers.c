@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 14:46:05 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/29 22:41:29 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/30 21:40:02 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,12 +42,7 @@ uint64_t		ft_atoi(const char *str)
 	return (num);
 }
 
-uint64_t		convert_uint(struct timeval time)
-{
-	return ((time.tv_sec * 1000) + (time.tv_usec * 0.001));
-}
-
-int		get_time(uint64_t *result)
+int				get_time(uint64_t *result)
 {
 	struct timeval	time;
 
@@ -55,37 +50,4 @@ int		get_time(uint64_t *result)
 		return (TIME_ERROR);
 	*result = (time.tv_sec * 1000) + (time.tv_usec * 0.001);
 	return (0);
-}
-
-struct timeval	convert(uint64_t ms)
-{
-	struct timeval	result;
-
-	result.tv_sec = ms / 1000;
-	result.tv_usec = (ms % 1000) * 1000;
-	return (result);
-}
-
-int64_t			sub_time(struct timeval *z, struct timeval x, struct timeval y)
-{
-	int64_t nsec;
-
-	if (x.tv_usec < y.tv_usec)
-	{
-		nsec = (y.tv_usec - x.tv_usec) / 1000000 + 1;
-		y.tv_usec -= 1000000 * nsec;
-		y.tv_sec += nsec;
-	}
-	if (x.tv_usec - y.tv_usec > 1000000)
-	{
-		nsec = (x.tv_usec - y.tv_usec) / 1000000;
-		y.tv_usec += 1000000 * nsec;
-		y.tv_sec -= nsec;
-	}
-	if (z)
-	{
-		z->tv_sec = x.tv_sec - y.tv_sec;
-		z->tv_usec = x.tv_usec - y.tv_usec;
-	}
-	return (x.tv_sec < y.tv_sec);
 }

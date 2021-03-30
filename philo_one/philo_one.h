@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 13:33:48 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/30 17:22:34 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/30 21:39:34 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,8 +45,9 @@ typedef struct		s_data
 	uint64_t		time_to_sleep;
 	uint64_t		max_eat;
 	t_bool			last_argument;
-	t_bool			ratio_finished;
-	pthread_mutex_t	ratio_mutex;
+	uint64_t		start_time;
+	pthread_mutex_t	mutex_done;
+	t_bool			is_done;
 }					t_data;
 
 t_data				*g_data;
@@ -57,9 +58,6 @@ t_data				*g_data;
 
 int					ft_isdigit(int c);
 uint64_t			ft_atoi(const char *str);
-uint64_t			convert_uint(struct timeval time);
-struct timeval		convert(uint64_t ms);
-int64_t				sub_time(struct timeval *z, struct timeval x, struct timeval y);
 int					get_time(uint64_t *result);
 
 /*
@@ -74,7 +72,6 @@ int					parse(int argc, char **argv, t_data **ret_data);
 
 # define EMPTY 0
 # define FORK 1
-
 # define LEFT 1
 # define RIGHT 2
 
@@ -93,26 +90,18 @@ typedef struct		s_philo
 {
 	size_t			id;
 	pthread_t		thread;
-	uint64_t		thread_start_time;
-	pthread_mutex_t	mutex_pass;
-	pthread_mutex_t	mutex_status;
-	int				status;
 	pthread_mutex_t	mutex_meal;
 	uint64_t		last_meal_time;
-	size_t			meals;
+	size_t			meals_counter;
 	t_hand			left_hand;
 	t_hand			right_hand;
 	t_fork			*left_fork;
 	t_fork			*right_fork;
 }					t_philo;
 
-# define NOT_STARTED 0
-# define THINK 1
-# define EAT 2
-# define SLEEP 3
-# define GET 11
-
 t_philo				*invite_philo();
+int					invite_philos(t_philo ***philos);
+int					delete_philos(t_philo **philos, size_t n);
 void				*philo_live(void *args);
 
 /*
@@ -121,30 +110,24 @@ void				*philo_live(void *args);
 
 int					init_mprint();
 int					delete_mprint();
-int					mprint(u_int64_t start_time, int id, char *action);
-
-/*
-**	Death monitor
-*/
-
-int					monitor(t_philo **philos);
+int					mprint(int id, char *action);
 
 /*
 **	Action
 */
 
-int		left_hand_search(t_philo *philo);
-int		philo_search_forks(t_philo *philo);
-int		put_forks_down(t_philo *philo);
-int		philo_eat(t_philo *philo);
-int		philo_sleep(t_philo *philo);
+int					left_hand_search(t_philo *philo);
+int					philo_search_forks(t_philo *philo);
+int					put_forks_down(t_philo *philo);
+int					philo_eat(t_philo *philo);
+int					philo_sleep(t_philo *philo);
 
 /*
-**	Arbitration
+**	Death timer
 */
 
-void	*arbitrate(void *args);
-
-int		status(t_philo *philo, int status);
+void				*run_death_timer(void *args);
+int					get_done();
+void				set_done(t_bool bool);
 
 #endif
