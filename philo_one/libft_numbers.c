@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   libft_numbers.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
+/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 14:46:05 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/30 21:40:02 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/30 23:43:52 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,9 +22,7 @@ int				ft_isdigit(int c)
 uint64_t		ft_atoi(const char *str)
 {
 	uint64_t	num;
-	uint64_t	minus;
 
-	minus = 1;
 	while (*str == '\t' || *str == '\n' || *str == '\v' || *str == '\f' ||
 			*str == '\r' || *str == ' ')
 		str++;

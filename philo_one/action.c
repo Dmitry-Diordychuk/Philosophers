@@ -6,27 +6,20 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 15:33:49 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/30 22:27:24 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/31 01:34:53 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_one.h"
 
-int		hand_search(t_philo *philo, t_fork *fork, int type)
+int	search_fork(t_fork *fork, t_hand *hand)
 {
-	int		error;
-
 	if (pthread_mutex_lock(&fork->mutex))
 		return (MUTEX_ERROR);
 	if (fork->slot == FORK)
 	{
-		if ((error = mprint(philo->id, "has taken a fork")) < 0)
-			return (error);
+		*hand = FORK;
 		fork->slot = EMPTY;
-		if (type == LEFT)
-			philo->left_hand = FORK;
-		else
-			philo->right_hand = FORK;
 	}
 	if (pthread_mutex_unlock(&fork->mutex))
 		return (MUTEX_ERROR);
@@ -37,31 +30,45 @@ int		philo_search_forks(t_philo *philo)
 {
 	int		error;
 
-	if ((error = hand_search(philo, philo->left_fork, LEFT)) < 0)
+	if (philo->id != g_data->philos_num)
+	{
+		while (philo->left_hand == EMPTY)
+			search_fork(philo->left_fork, &philo->left_hand);
+		if ((error = mprint(philo->id, "has taken a fork")) < 0)
+			return (error);
+	}
+	while (philo->right_hand == EMPTY)
+		search_fork(philo->right_fork, &philo->right_hand);
+	if ((error = mprint(philo->id, "has taken a fork")) < 0)
 		return (error);
-	if ((error = hand_search(philo, philo->right_fork, RIGHT)) < 0)
-		return (error);
+	if (philo->id == g_data->philos_num)
+	{
+		while (philo->left_hand == EMPTY)
+			search_fork(philo->left_fork, &philo->left_hand);
+		if ((error = mprint(philo->id, "has taken a fork")) < 0)
+			return (error);
+	}
 	return (0);
 }
 
 int		put_forks_down(t_philo *philo)
 {
-	if (pthread_mutex_lock(&philo->left_fork->mutex))
-		return (MUTEX_ERROR);
-	philo->left_fork->slot = FORK;
-	philo->left_hand = EMPTY;
-	if (pthread_mutex_unlock(&philo->left_fork->mutex))
-		return (MUTEX_ERROR);
 	if (pthread_mutex_lock(&philo->right_fork->mutex))
 		return (MUTEX_ERROR);
 	philo->right_fork->slot = FORK;
 	philo->right_hand = EMPTY;
 	if (pthread_mutex_unlock(&philo->right_fork->mutex))
 		return (MUTEX_ERROR);
+	if (pthread_mutex_lock(&philo->left_fork->mutex))
+		return (MUTEX_ERROR);
+	philo->left_fork->slot = FORK;
+	philo->left_hand = EMPTY;
+	if (pthread_mutex_unlock(&philo->left_fork->mutex))
+		return (MUTEX_ERROR);
 	return (0);
 }
 
-int set_meal(t_philo *philo)
+int		set_meal(t_philo *philo)
 {
 	if (pthread_mutex_lock(&philo->mutex_meal))
 		return (MUTEX_ERROR);
@@ -73,6 +80,20 @@ int set_meal(t_philo *philo)
 	return (0);
 }
 
+t_bool	done_counter()
+{
+	pthread_mutex_lock(&g_data->mutex_done);
+	g_data->done_counter++;
+	if (g_data->done_counter == g_data->philos_num)
+	{
+		g_data->is_done = TRUE;
+		pthread_mutex_unlock(&g_data->mutex_done);
+		return (TRUE);
+	}
+	pthread_mutex_unlock(&g_data->mutex_done);
+	return (FALSE);
+}
+
 int		philo_eat(t_philo *philo)
 {
 	int	error;
@@ -82,11 +103,9 @@ int		philo_eat(t_philo *philo)
 	if (usleep(g_data->time_to_eat * 1000))
 		return (SLEEP_ERROR);
 	set_meal(philo);
-	if (g_data->last_argument && philo->meals_counter > g_data->max_eat)
-	{
-		write(2, "Done\n", 5);
-		return (ERROR);
-	}
+	//if (g_data->last_argument && philo->meals_counter > g_data->max_eat)
+	//	if (done_counter())
+	//		return (ERROR);
 	if (put_forks_down(philo) < 0)
 		return (MUTEX_ERROR);
 	return (TRUE);

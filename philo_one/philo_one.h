@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 13:33:48 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/30 21:39:34 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/31 00:49:25 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,9 @@ typedef struct		s_data
 	t_bool			last_argument;
 	uint64_t		start_time;
 	pthread_mutex_t	mutex_done;
+	pthread_mutex_t	mutex_print;
 	t_bool			is_done;
+	size_t			done_counter;
 }					t_data;
 
 t_data				*g_data;
@@ -108,8 +110,6 @@ void				*philo_live(void *args);
 **	Print
 */
 
-int					init_mprint();
-int					delete_mprint();
 int					mprint(int id, char *action);
 
 /*

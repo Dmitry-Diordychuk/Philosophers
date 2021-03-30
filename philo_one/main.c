@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 13:33:59 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/30 22:07:34 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/31 01:10:01 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,6 @@ int		start_threads(t_philo **philos, pthread_t **death_timers)
 
 int		exit_handler(int ret, t_philo **philos, t_fork **forks, pthread_t *dts)
 {
-	delete_mprint();
 	if (philos)
 		delete_philos(philos, g_data->philos_num);
 	if (forks)
@@ -112,13 +111,13 @@ int		main(int argc, char **argv)
 	int			error;
 
 	philos = NULL;
-	if ((error = init_mprint()) < 0)
-		return (error);
 	if (!(g_data = (t_data*)malloc(sizeof(t_data))))
 		return (exit_handler(MEM_ERROR, NULL, NULL, NULL));
 	if ((error = parse(argc, argv, &g_data)) < 0)
 		return (exit_handler(error, NULL, NULL, NULL));
 	if (pthread_mutex_init(&g_data->mutex_done, NULL))
+		return (exit_handler(MUTEX_ERROR, NULL, NULL, NULL));
+	if (pthread_mutex_init(&g_data->mutex_print, NULL))
 		return (exit_handler(MUTEX_ERROR, NULL, NULL, NULL));
 	if ((error = invite_philos(&philos)) < 0)
 		return (exit_handler(error, NULL, NULL, NULL));
@@ -128,7 +127,9 @@ int		main(int argc, char **argv)
 		return (exit_handler(error, philos, forks, NULL));
 	while (!get_done())
 		usleep(10000);
+	if (pthread_mutex_destroy(&g_data->mutex_print))
+		return (exit_handler(0, philos, forks, death_timers));
 	if (pthread_mutex_destroy(&g_data->mutex_done))
-		return (exit_handler(MUTEX_ERROR, NULL, NULL, NULL));
+		return (exit_handler(0, philos, forks, death_timers));
 	return (exit_handler(0, philos, forks, death_timers));
 }

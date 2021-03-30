@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 14:48:37 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/29 22:12:02 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/31 00:48:35 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,6 +78,8 @@ t_bool	try_get_numbers(int argc, char **argv, t_data **ret_data)
 int		parse(int argc, char **argv, t_data **ret_data)
 {
 	(*ret_data)->last_argument = FALSE;
+	(*ret_data)->done_counter = 0;
+	(*ret_data)->is_done = FALSE;
 	if (!check_argc(argc))
 	{
 		if (printf("Wrong number of arguments!\n") < 0 ||

@@ -6,13 +6,13 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/30 19:44:48 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/30 22:25:40 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/31 00:58:55 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_one.h"
 
-int get_done()
+t_bool get_done()
 {
 	t_bool is_done;
 
