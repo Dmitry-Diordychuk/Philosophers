@@ -6,35 +6,47 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 18:48:25 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/29 16:38:13 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/30 18:15:46 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_one.h"
 
+int trap(t_philo *philo)
+{
+	pthread_mutex_lock(&philo->mutex_pass);
+	pthread_mutex_unlock(&philo->mutex_pass);
+	return (0);
+}
+
 void	*philo_live(void *args)
 {
-	struct timeval	start_time;
-	t_table			*position;
+	uint64_t		start_time;
+	t_philo			*philo;
 	int				error;
 
-	position = (t_table*)args;
-	if (gettimeofday(&start_time, NULL) < 0)
+	philo = (t_philo*)args;
+	if (get_time(&start_time) < 0)
 		return (NULL);
-	start_time = position->data->start_time;
-	position->philo->last_meal_time = start_time;
+	philo->thread_start_time = start_time;
+	pthread_mutex_lock(&philo->mutex_meal);
+	philo->last_meal_time = start_time;
+	pthread_mutex_unlock(&philo->mutex_meal);
+	trap(philo);
 	while (INFINITE_LOOP)
 	{
-		if ((error = philo_search_forks(position, start_time)) < 0)
+		if ((error = mprint(philo->thread_start_time, philo->id, "is thinking")) < 0)
 			return (NULL);
-		if (!(error = philo_eat(position, start_time)))
+		status(philo, THINK);
+		if ((error = philo_search_forks(philo)) < 0)
+			return (NULL);
+		if (!(error = philo_eat(philo)))
 			break ;
 		if (error < 0)
 			return (NULL);
-		if (position->philo->is_dead)
-			break ;
-		if ((error = philo_sleep(position, start_time)) < 0)
+		if ((error = philo_sleep(philo)) < 0)
 			return (NULL);
+		trap(philo);
 	}
 	return (NULL);
 }
@@ -46,9 +58,27 @@ t_philo	*invite_philo(void)
 
 	if (!(new_philo = (t_philo*)malloc(sizeof(t_philo))))
 		return (NULL);
+	if (pthread_mutex_init(&new_philo->mutex_meal, NULL))
+	{
+		free(new_philo);
+		return (NULL);
+	}
+	if (pthread_mutex_init(&new_philo->mutex_pass, NULL))
+	{
+		free(new_philo);
+		return (NULL);
+	}
+	pthread_mutex_lock(&new_philo->mutex_pass);
+	if (pthread_mutex_init(&new_philo->mutex_status, NULL))
+	{
+		free(new_philo);
+		return (NULL);
+	}
 	new_philo->id = i + 1;
-	new_philo->left = EMPTY;
-	new_philo->right = EMPTY;
+	new_philo->left_hand = EMPTY;
+	new_philo->right_hand = EMPTY;
+	new_philo->meals = 0;
+	new_philo->status = NOT_STARTED;
 	i++;
 	return (new_philo);
 }

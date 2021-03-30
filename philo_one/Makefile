@@ -6,17 +6,17 @@
 #    By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/27 13:43:49 by kdustin           #+#    #+#              #
-#    Updated: 2021/03/29 15:35:15 by kdustin          ###   ########.fr        #
+#    Updated: 2021/03/30 17:08:07 by kdustin          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-CFLAGS = -Wall -Wextra -Werror -g
+CFLAGS = -Wall -Wextra -Werror -g -fsanitize=thread
 
 NAME = philo_one
 
 INC = philo_one.h
-SRCS = main.c libft_numbers.c parse.c print.c philo.c table.c death_monitor.c \
-		action.c
+SRCS = main.c libft_numbers.c parse.c print.c philo.c monitor.c \
+		action.c arbitration.c
 OBJS = $(SRCS:.c=.o)
 
 all: $(NAME)

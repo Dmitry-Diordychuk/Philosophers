@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 14:48:37 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/29 14:51:45 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/29 22:12:02 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,16 +22,16 @@ t_bool	check_argc(int argc)
 void	choose_option(int i, uint64_t number, t_data **ret_data)
 {
 	if (i == 1)
-		(*ret_data)->number_of_philosophers = (size_t)number;
+		(*ret_data)->philos_num = (size_t)number;
 	else if (i == 2)
-		(*ret_data)->time_to_die = convert(number);
+		(*ret_data)->time_to_die = number;
 	else if (i == 3)
 		(*ret_data)->time_to_eat = (unsigned long)number;
 	else if (i == 4)
 		(*ret_data)->time_to_sleep = (unsigned long)number;
 	else if (i == 5)
 	{
-		(*ret_data)->number_of_times_each_philosopher_must_eat = number;
+		(*ret_data)->max_eat = number;
 		(*ret_data)->last_argument = TRUE;
 	}
 }

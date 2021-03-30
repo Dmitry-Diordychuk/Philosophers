@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 14:46:05 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/29 14:50:03 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/29 22:41:29 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,16 @@ uint64_t		convert_uint(struct timeval time)
 	return ((time.tv_sec * 1000) + (time.tv_usec * 0.001));
 }
 
+int		get_time(uint64_t *result)
+{
+	struct timeval	time;
+
+	if (gettimeofday(&time, NULL) < 0)
+		return (TIME_ERROR);
+	*result = (time.tv_sec * 1000) + (time.tv_usec * 0.001);
+	return (0);
+}
+
 struct timeval	convert(uint64_t ms)
 {
 	struct timeval	result;
@@ -56,9 +66,9 @@ struct timeval	convert(uint64_t ms)
 	return (result);
 }
 
-int				sub_time(struct timeval *z, struct timeval x, struct timeval y)
+int64_t			sub_time(struct timeval *z, struct timeval x, struct timeval y)
 {
-	int nsec;
+	int64_t nsec;
 
 	if (x.tv_usec < y.tv_usec)
 	{

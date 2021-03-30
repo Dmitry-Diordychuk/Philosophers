@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 13:33:48 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/29 17:11:44 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/30 17:22:34 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,17 +37,19 @@ typedef int			t_bool;
 # define ERROR			-10
 
 # define INFINITE_LOOP 1
-
 typedef struct		s_data
 {
-	size_t			number_of_philosophers;
-	struct timeval	time_to_die;
-	unsigned long	time_to_eat;
-	unsigned long	time_to_sleep;
-	uint64_t		number_of_times_each_philosopher_must_eat;
+	size_t			philos_num;
+	uint64_t		time_to_die;
+	uint64_t		time_to_eat;
+	uint64_t		time_to_sleep;
+	uint64_t		max_eat;
 	t_bool			last_argument;
-	struct timeval	start_time;
+	t_bool			ratio_finished;
+	pthread_mutex_t	ratio_mutex;
 }					t_data;
+
+t_data				*g_data;
 
 /*
 **	Libft functions
@@ -57,8 +59,8 @@ int					ft_isdigit(int c);
 uint64_t			ft_atoi(const char *str);
 uint64_t			convert_uint(struct timeval time);
 struct timeval		convert(uint64_t ms);
-int					sub_time(struct timeval *z, struct timeval x,
-												struct timeval y);
+int64_t				sub_time(struct timeval *z, struct timeval x, struct timeval y);
+int					get_time(uint64_t *result);
 
 /*
 **	Parse
@@ -72,51 +74,46 @@ int					parse(int argc, char **argv, t_data **ret_data);
 
 # define EMPTY 0
 # define FORK 1
-# define PHILO -1
 
-typedef int			t_place;
+# define LEFT 1
+# define RIGHT 2
 
-# define LAST 1
+typedef int			t_slot;
 
-typedef int			t_flag;
+typedef struct		s_fork
+{
+	size_t			id;
+	t_slot			slot;
+	pthread_mutex_t	mutex;
+}					t_fork;
+
 typedef t_bool		t_hand;
 
 typedef struct		s_philo
 {
-	int				id;
-	t_bool			is_dead;
-	struct timeval	last_meal_time;
-	t_hand			left;
-	t_hand			right;
-	uint64_t		time_from_last_meal;
+	size_t			id;
+	pthread_t		thread;
+	uint64_t		thread_start_time;
+	pthread_mutex_t	mutex_pass;
+	pthread_mutex_t	mutex_status;
+	int				status;
+	pthread_mutex_t	mutex_meal;
+	uint64_t		last_meal_time;
+	size_t			meals;
+	t_hand			left_hand;
+	t_hand			right_hand;
+	t_fork			*left_fork;
+	t_fork			*right_fork;
 }					t_philo;
+
+# define NOT_STARTED 0
+# define THINK 1
+# define EAT 2
+# define SLEEP 3
+# define GET 11
 
 t_philo				*invite_philo();
 void				*philo_live(void *args);
-
-/*
-**	Table
-*/
-
-typedef struct		s_table
-{
-	t_data			*data;
-	t_philo			*philo;
-	pthread_mutex_t	mutex;
-	t_place			place;
-	t_flag			flag;
-	struct s_table	*left;
-	struct s_table	*right;
-	pthread_t		thread;
-}					t_table;
-
-typedef t_table		t_null;
-
-int					start_threads(t_table *table);
-int					init_table(t_data *data, t_table **ret_table);
-int					delete_table(t_table **table, t_table **cur);
-int					delete_list_reverse(t_table **table);
-int					set_position(int i, t_table **position, t_data *data);
 
 /*
 **	Print
@@ -124,28 +121,30 @@ int					set_position(int i, t_table **position, t_data *data);
 
 int					init_mprint();
 int					delete_mprint();
-int					mprint(struct timeval start_time, int id, char *action);
+int					mprint(u_int64_t start_time, int id, char *action);
 
 /*
 **	Death monitor
 */
 
-int					monitor_death_status(t_table *table);
+int					monitor(t_philo **philos);
 
 /*
 **	Action
 */
 
-int		left_hand_search(t_table *position, struct timeval start_time);
-int		philo_search_forks(t_table *position, struct timeval start_time);
-int		put_forks_down(t_table *position);
-int		philo_eat(t_table *position, struct timeval start_time);
-int		philo_sleep(t_table *position, struct timeval start_time);
+int		left_hand_search(t_philo *philo);
+int		philo_search_forks(t_philo *philo);
+int		put_forks_down(t_philo *philo);
+int		philo_eat(t_philo *philo);
+int		philo_sleep(t_philo *philo);
 
 /*
 **	Arbitration
 */
 
 void	*arbitrate(void *args);
+
+int		status(t_philo *philo, int status);
 
 #endif
