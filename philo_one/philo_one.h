@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 13:33:48 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/31 13:03:30 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/31 16:36:10 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,8 +35,8 @@ typedef int			t_bool;
 # define MATH_ERROR		-8
 # define SLEEP_ERROR	-9
 # define ERROR			-10
+# define INFINITE_LOOP	1
 
-# define INFINITE_LOOP 1
 typedef struct		s_data
 {
 	size_t			philos_num;
@@ -106,13 +106,18 @@ typedef struct		s_philo
 	int				request;
 }					t_philo;
 
-void	set_request(t_philo *philo, int request);
-int		get_response(t_philo *philo);
-
 t_philo				*invite_philo();
 int					invite_philos(t_philo ***philos);
 int					delete_philos(t_philo **philos, size_t n);
 void				*philo_live(void *args);
+
+/*
+**	Table (forks)
+*/
+
+int					delete_forks(t_fork **forks, size_t n);
+t_fork				*serve_fork();
+int					set_table(t_philo **philos, t_fork ***forks);
 
 /*
 **	Print
@@ -124,7 +129,6 @@ int					mprint(int id, char *action);
 **	Action
 */
 
-int					left_hand_search(t_philo *philo);
 int					philo_search_forks(t_philo *philo);
 int					put_forks_down(t_philo *philo);
 int					philo_eat(t_philo *philo);
@@ -135,9 +139,15 @@ int					philo_sleep(t_philo *philo);
 */
 
 void				*run_death_timer(void *args);
+
+/*
+**	Get set
+*/
+
 int					get_done();
 void				set_done(t_bool bool);
-
-int waiter_serve(t_philo **philos, t_fork **forks);
+uint64_t			get_meal_time(t_philo *philo);
+int					set_meal(t_philo *philo);
+t_bool				done_counter();
 
 #endif

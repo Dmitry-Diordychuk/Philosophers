@@ -6,44 +6,23 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/30 19:44:48 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/31 13:54:02 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/31 16:24:05 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_one.h"
 
-t_bool get_done()
+size_t		get_done_counter(void)
 {
-	t_bool is_done;
+	size_t counter;
 
 	pthread_mutex_lock(&g_data->mutex_done);
-	is_done = g_data->is_done;
+	counter = g_data->done_counter;
 	pthread_mutex_unlock(&g_data->mutex_done);
-	return (is_done);
+	return (counter);
 }
 
-void set_done(t_bool bool)
-{
-	pthread_mutex_lock(&g_data->mutex_done);
-	g_data->is_done = bool;
-	pthread_mutex_unlock(&g_data->mutex_done);
-}
-
-uint64_t get_meal_time(t_philo *philo)
-{
-	uint64_t	result;
-	uint64_t	cur_time;
-
-	if (pthread_mutex_lock(&philo->mutex_meal))
-		return (MUTEX_ERROR);
-	get_time(&cur_time);
-	result = cur_time - philo->last_meal_time;
-	if (pthread_mutex_unlock(&philo->mutex_meal))
-		return (MUTEX_ERROR);
-	return (result);
-}
-
-void	*run_death_timer(void *args)
+void		*run_death_timer(void *args)
 {
 	t_philo		*philo;
 
@@ -58,8 +37,9 @@ void	*run_death_timer(void *args)
 			return (NULL);
 		}
 		usleep(1000);
-		if (get_done())
+		if (get_done() || get_done_counter() == g_data->philos_num)
 		{
+			set_done(TRUE);
 			pthread_join(philo->thread, NULL);
 			return (NULL);
 		}

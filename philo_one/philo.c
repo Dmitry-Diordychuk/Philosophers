@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 18:48:25 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/31 13:28:41 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/31 16:29:31 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,9 @@ void	*philo_live(void *args)
 	int				error;
 
 	philo = (t_philo*)args;
+	pthread_mutex_lock(&philo->mutex_meal);
 	if (get_time(&time) < 0)
 		return (NULL);
-	pthread_mutex_lock(&philo->mutex_meal);
 	philo->last_meal_time = time;
 	pthread_mutex_unlock(&philo->mutex_meal);
 	while (!get_done())
@@ -37,8 +37,6 @@ void	*philo_live(void *args)
 		if ((error = philo_sleep(philo)) < 0)
 			return (NULL);
 	}
-	if ((error = mprint(philo->id, "thread exited")) < 0)
-		return (NULL);
 	return (NULL);
 }
 
@@ -69,7 +67,7 @@ t_philo	*invite_philo(void)
 	return (new_philo);
 }
 
-int delete_philos(t_philo **philos, size_t n)
+int		delete_philos(t_philo **philos, size_t n)
 {
 	size_t i;
 
@@ -83,7 +81,7 @@ int delete_philos(t_philo **philos, size_t n)
 	return (MEM_ERROR);
 }
 
-int invite_philos(t_philo ***philos)
+int		invite_philos(t_philo ***philos)
 {
 	size_t	i;
 

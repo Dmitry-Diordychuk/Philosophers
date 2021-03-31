@@ -6,66 +6,11 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 13:33:59 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/31 13:42:05 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/31 16:35:52 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_one.h"
-
-int		delete_forks(t_fork **forks, size_t n)
-{
-	size_t i;
-
-	if (forks)
-	{
-		i = 0;
-		while (i < n)
-		{
-			pthread_mutex_destroy(&forks[i]->mutex);
-			free(forks[i++]);
-		}
-		free(forks);
-	}
-	return (MEM_ERROR);
-}
-
-t_fork	*serve_fork()
-{
-	static int	i;
-	t_fork		*new_fork;
-
-	if (!(new_fork = (t_fork*)malloc(sizeof(t_fork))))
-		return (NULL);
-	if (pthread_mutex_init(&new_fork->mutex, NULL))
-	{
-		free(new_fork);
-		return (NULL);
-	}
-	new_fork->slot = FORK;
-	new_fork->id = i + 1;
-	i++;
-	return (new_fork);
-}
-
-int		set_table(t_philo **philos, t_fork ***forks)
-{
-	size_t	i;
-	size_t	n;
-
-	n = g_data->philos_num;
-	if (!((*forks) = (t_fork**)malloc(sizeof(t_fork*) * n)))
-		return (MEM_ERROR);
-	i = 0;
-	while (i < g_data->philos_num)
-	{
-		if (!((*forks)[i] = serve_fork()))
-			return (delete_forks((*forks), i));
-		philos[i]->right_fork = (*forks)[i];
-		philos[(i + 1) % n]->left_fork = (*forks)[i];
-		i++;
-	}
-	return (0);
-}
 
 int		start_threads(t_philo **philos, pthread_t **death_timers)
 {
@@ -80,10 +25,29 @@ int		start_threads(t_philo **philos, pthread_t **death_timers)
 	{
 		if (pthread_create(&philos[i]->thread, NULL, philo_live, philos[i]))
 			return (THREAD_ERROR);
-		if (pthread_create(&(*death_timers)[i], NULL, run_death_timer, philos[i]))
+		if (
+		pthread_create(&(*death_timers)[i], NULL, run_death_timer, philos[i]))
 			return (THREAD_ERROR);
 		i++;
 	}
+	return (0);
+}
+
+int		wait_threads(pthread_t *death_timers)
+{
+	size_t i;
+
+	i = 0;
+	while (i < g_data->philos_num)
+	{
+		if (pthread_join(death_timers[i], NULL))
+			return (THREAD_ERROR);
+		i++;
+	}
+	if (pthread_mutex_destroy(&g_data->mutex_print))
+		return (MUTEX_ERROR);
+	if (pthread_mutex_destroy(&g_data->mutex_done))
+		return (MUTEX_ERROR);
 	return (0);
 }
 
@@ -121,17 +85,7 @@ int		main(int argc, char **argv)
 		return (exit_handler(error, philos, NULL, NULL));
 	if ((error = start_threads(philos, &death_timers) < 0))
 		return (exit_handler(error, philos, forks, NULL));
-	waiter_serve(philos, forks);
-	size_t i;
-	i = 0;
-	while (i < g_data->philos_num)
-	{
-		pthread_join(death_timers[i], NULL);
-		i++;
-	}
-	if (pthread_mutex_destroy(&g_data->mutex_print))
-		return (exit_handler(0, philos, forks, death_timers));
-	if (pthread_mutex_destroy(&g_data->mutex_done))
-		return (exit_handler(0, philos, forks, death_timers));
+	if ((error = wait_threads(death_timers)) < 0)
+		return (exit_handler(error, philos, forks, death_timers));
 	return (exit_handler(0, philos, forks, death_timers));
 }
