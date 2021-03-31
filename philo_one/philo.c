@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 18:48:25 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/30 23:13:58 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/31 13:28:41 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ void	*philo_live(void *args)
 	pthread_mutex_lock(&philo->mutex_meal);
 	philo->last_meal_time = time;
 	pthread_mutex_unlock(&philo->mutex_meal);
-	while (INFINITE_LOOP)
+	while (!get_done())
 	{
 		if ((error = mprint(philo->id, "is thinking")) < 0)
 			return (NULL);
@@ -37,6 +37,8 @@ void	*philo_live(void *args)
 		if ((error = philo_sleep(philo)) < 0)
 			return (NULL);
 	}
+	if ((error = mprint(philo->id, "thread exited")) < 0)
+		return (NULL);
 	return (NULL);
 }
 
@@ -52,10 +54,17 @@ t_philo	*invite_philo(void)
 		free(new_philo);
 		return (NULL);
 	}
+	if (pthread_mutex_init(&new_philo->mutex_request, NULL))
+	{
+		free(new_philo);
+		return (NULL);
+	}
+	new_philo->request = 0;
 	new_philo->id = i + 1;
 	new_philo->left_hand = EMPTY;
 	new_philo->right_hand = EMPTY;
 	new_philo->meals_counter = 0;
+	new_philo->is_counted = FALSE;
 	i++;
 	return (new_philo);
 }

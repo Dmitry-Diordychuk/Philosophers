@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/30 19:44:48 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/31 00:58:55 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/31 13:54:02 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,19 +50,19 @@ void	*run_death_timer(void *args)
 	philo = (t_philo*)args;
 	while (INFINITE_LOOP)
 	{
-		if (get_done())
-		{
-			pthread_detach(philo->thread);
-			return (NULL);
-		}
 		if (get_meal_time(philo) > g_data->time_to_die)
 		{
 			mprint(philo->id, "dead");
 			set_done(TRUE);
-			pthread_detach(philo->thread);
+			pthread_join(philo->thread, NULL);
 			return (NULL);
 		}
 		usleep(1000);
+		if (get_done())
+		{
+			pthread_join(philo->thread, NULL);
+			return (NULL);
+		}
 	}
 	return (NULL);
 }

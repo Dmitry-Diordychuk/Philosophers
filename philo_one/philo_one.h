@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 13:33:48 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/31 00:49:25 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/31 13:03:30 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,8 +74,10 @@ int					parse(int argc, char **argv, t_data **ret_data);
 
 # define EMPTY 0
 # define FORK 1
-# define LEFT 1
-# define RIGHT 2
+# define LEFT 2
+# define RIGHT 3
+# define ALLOW 4
+# define DENY 5
 
 typedef int			t_slot;
 
@@ -95,11 +97,17 @@ typedef struct		s_philo
 	pthread_mutex_t	mutex_meal;
 	uint64_t		last_meal_time;
 	size_t			meals_counter;
+	t_bool			is_counted;
 	t_hand			left_hand;
 	t_hand			right_hand;
 	t_fork			*left_fork;
 	t_fork			*right_fork;
+	pthread_mutex_t	mutex_request;
+	int				request;
 }					t_philo;
+
+void	set_request(t_philo *philo, int request);
+int		get_response(t_philo *philo);
 
 t_philo				*invite_philo();
 int					invite_philos(t_philo ***philos);
@@ -129,5 +137,7 @@ int					philo_sleep(t_philo *philo);
 void				*run_death_timer(void *args);
 int					get_done();
 void				set_done(t_bool bool);
+
+int waiter_serve(t_philo **philos, t_fork **forks);
 
 #endif

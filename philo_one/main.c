@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 13:33:59 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/31 01:10:01 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/31 13:42:05 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,10 +93,6 @@ int		exit_handler(int ret, t_philo **philos, t_fork **forks, pthread_t *dts)
 		delete_philos(philos, g_data->philos_num);
 	if (forks)
 		delete_forks(forks, g_data->philos_num);
-	size_t i;
-	i = -1;
-	while (++i < g_data->philos_num)
-		pthread_detach(dts[i]);
 	free(dts);
 	if (g_data)
 		free(g_data);
@@ -125,8 +121,14 @@ int		main(int argc, char **argv)
 		return (exit_handler(error, philos, NULL, NULL));
 	if ((error = start_threads(philos, &death_timers) < 0))
 		return (exit_handler(error, philos, forks, NULL));
-	while (!get_done())
-		usleep(10000);
+	waiter_serve(philos, forks);
+	size_t i;
+	i = 0;
+	while (i < g_data->philos_num)
+	{
+		pthread_join(death_timers[i], NULL);
+		i++;
+	}
 	if (pthread_mutex_destroy(&g_data->mutex_print))
 		return (exit_handler(0, philos, forks, death_timers));
 	if (pthread_mutex_destroy(&g_data->mutex_done))
