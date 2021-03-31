@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   philo.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
+/*   By: kdustin <kdustin@student.21-school.ru>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 18:48:25 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/31 16:29:31 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/31 20:17:10 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,23 +19,24 @@ void	*philo_live(void *args)
 	int				error;
 
 	philo = (t_philo*)args;
-	pthread_mutex_lock(&philo->mutex_meal);
+	if (pthread_mutex_lock(&philo->mutex_meal))
+		set_done(ERROR);
 	if (get_time(&time) < 0)
-		return (NULL);
+		set_done(ERROR);
 	philo->last_meal_time = time;
-	pthread_mutex_unlock(&philo->mutex_meal);
+	if (pthread_mutex_unlock(&philo->mutex_meal))
+		set_done(ERROR);
 	while (!get_done())
 	{
 		if ((error = mprint(philo->id, "is thinking")) < 0)
-			return (NULL);
+			set_done(ERROR);
 		if ((error = philo_search_forks(philo)) < 0)
-			return (NULL);
+			set_done(ERROR);
 		if (!(error = philo_eat(philo)))
 			break ;
-		if (error < 0)
-			return (NULL);
+		error < 0 ? set_done(ERROR) : FALSE;
 		if ((error = philo_sleep(philo)) < 0)
-			return (NULL);
+			set_done(ERROR);
 	}
 	return (NULL);
 }
@@ -52,12 +53,6 @@ t_philo	*invite_philo(void)
 		free(new_philo);
 		return (NULL);
 	}
-	if (pthread_mutex_init(&new_philo->mutex_request, NULL))
-	{
-		free(new_philo);
-		return (NULL);
-	}
-	new_philo->request = 0;
 	new_philo->id = i + 1;
 	new_philo->left_hand = EMPTY;
 	new_philo->right_hand = EMPTY;
@@ -75,9 +70,11 @@ int		delete_philos(t_philo **philos, size_t n)
 	if (i < n)
 	{
 		i = 0;
-		free(philos);
+		pthread_mutex_destroy(&philos[i]->mutex_meal);
+		free(philos[i]);
 		i++;
 	}
+	free(philos);
 	return (MEM_ERROR);
 }
 

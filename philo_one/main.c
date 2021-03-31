@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
+/*   By: kdustin <kdustin@student.21-school.ru>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 13:33:59 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/31 16:35:52 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/31 20:31:52 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,9 +18,9 @@ int		start_threads(t_philo **philos, pthread_t **death_timers)
 
 	if (!(*death_timers = (pthread_t*)malloc(sizeof(pthread_t))))
 		return (MEM_ERROR);
-	set_done(FALSE);
 	i = 0;
-	get_time(&g_data->start_time);
+	if (get_time(&g_data->start_time) < 0)
+		return (TIME_ERROR);
 	while (i < g_data->philos_num)
 	{
 		if (pthread_create(&philos[i]->thread, NULL, philo_live, philos[i]))
@@ -53,6 +53,7 @@ int		wait_threads(pthread_t *death_timers)
 
 int		exit_handler(int ret, t_philo **philos, t_fork **forks, pthread_t *dts)
 {
+	usleep(1000);
 	if (philos)
 		delete_philos(philos, g_data->philos_num);
 	if (forks)

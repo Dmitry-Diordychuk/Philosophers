@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   action.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
+/*   By: kdustin <kdustin@student.21-school.ru>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 15:33:49 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/31 16:22:27 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/31 18:06:20 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,8 @@ int		philo_eat(t_philo *philo)
 		return (error);
 	if (usleep(g_data->time_to_eat * 1000))
 		return (SLEEP_ERROR);
-	set_meal(philo);
+	if (set_meal(philo) < 0)
+		return (MUTEX_ERROR);
 	if (put_forks_down(philo) < 0)
 		return (MUTEX_ERROR);
 	philo->meals_counter++;
@@ -74,7 +75,8 @@ int		philo_eat(t_philo *philo)
 		if (!philo->is_counted)
 			if (philo->meals_counter > g_data->max_eat)
 			{
-				done_counter();
+				if (done_counter() < 0)
+					return (MUTEX_ERROR);
 				philo->is_counted = TRUE;
 			}
 	return (TRUE);

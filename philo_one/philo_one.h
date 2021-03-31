@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   philo_one.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
+/*   By: kdustin <kdustin@student.21-school.ru>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 13:33:48 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/31 16:36:10 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/31 20:16:36 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,8 +102,6 @@ typedef struct		s_philo
 	t_hand			right_hand;
 	t_fork			*left_fork;
 	t_fork			*right_fork;
-	pthread_mutex_t	mutex_request;
-	int				request;
 }					t_philo;
 
 t_philo				*invite_philo();
@@ -145,7 +143,7 @@ void				*run_death_timer(void *args);
 */
 
 int					get_done();
-void				set_done(t_bool bool);
+int					set_done(t_bool bool);
 uint64_t			get_meal_time(t_philo *philo);
 int					set_meal(t_philo *philo);
 t_bool				done_counter();

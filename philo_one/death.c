@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   death.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
+/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/30 19:44:48 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/31 16:24:05 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/03/31 19:34:29 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,11 @@ size_t		get_done_counter(void)
 {
 	size_t counter;
 
-	pthread_mutex_lock(&g_data->mutex_done);
+	if (pthread_mutex_lock(&g_data->mutex_done))
+		return (MUTEX_ERROR);
 	counter = g_data->done_counter;
-	pthread_mutex_unlock(&g_data->mutex_done);
+	if (pthread_mutex_unlock(&g_data->mutex_done))
+		return (MUTEX_ERROR);
 	return (counter);
 }
 
@@ -36,7 +38,8 @@ void		*run_death_timer(void *args)
 			pthread_join(philo->thread, NULL);
 			return (NULL);
 		}
-		usleep(1000);
+		if (usleep(1000) < 0)
+			set_done(ERROR);
 		if (get_done() || get_done_counter() == g_data->philos_num)
 		{
 			set_done(TRUE);
