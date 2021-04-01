@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 18:48:25 by kdustin           #+#    #+#             */
-/*   Updated: 2021/04/01 14:18:39 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/04/01 18:48:28 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,9 +66,8 @@ int		delete_philos(t_philo **philos, size_t n)
 	size_t i;
 
 	i = 0;
-	if (i < n)
+	while (i < n)
 	{
-		i = 0;
 		sem_close(philos[i]->sem_meal);
 		free(philos[i]);
 		i++;

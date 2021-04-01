@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kdustin <kdustin@student.21-school.ru>     +#+  +:+       +#+        */
+/*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 13:33:59 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/31 20:31:52 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/04/01 18:54:36 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,8 @@ int		start_threads(t_philo **philos, pthread_t **death_timers)
 {
 	size_t		i;
 
-	if (!(*death_timers = (pthread_t*)malloc(sizeof(pthread_t))))
+	if (!(*death_timers = (pthread_t*)malloc(sizeof(pthread_t) *
+	g_data->philos_num)))
 		return (MEM_ERROR);
 	i = 0;
 	if (get_time(&g_data->start_time) < 0)

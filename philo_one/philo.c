@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 18:48:25 by kdustin           #+#    #+#             */
-/*   Updated: 2021/04/01 13:45:49 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/04/01 18:48:16 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,9 +66,8 @@ int		delete_philos(t_philo **philos, size_t n)
 	size_t i;
 
 	i = 0;
-	if (i < n)
+	while (i < n)
 	{
-		i = 0;
 		pthread_mutex_destroy(&philos[i]->mutex_meal);
 		free(philos[i]);
 		i++;

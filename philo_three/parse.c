@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 14:48:37 by kdustin           #+#    #+#             */
-/*   Updated: 2021/04/01 01:19:50 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/04/01 16:15:06 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,20 +19,20 @@ t_bool	check_argc(int argc)
 	return (TRUE);
 }
 
-void	choose_option(int i, uint64_t number, t_data **ret_data)
+void	choose_option(int i, uint64_t number, t_data *ret_data)
 {
 	if (i == 1)
-		(*ret_data)->philos_num = (size_t)number;
+		ret_data->philos_num = (size_t)number;
 	else if (i == 2)
-		(*ret_data)->time_to_die = number;
+		ret_data->time_to_die = number;
 	else if (i == 3)
-		(*ret_data)->time_to_eat = (unsigned long)number;
+		ret_data->time_to_eat = (unsigned long)number;
 	else if (i == 4)
-		(*ret_data)->time_to_sleep = (unsigned long)number;
+		ret_data->time_to_sleep = (unsigned long)number;
 	else if (i == 5)
 	{
-		(*ret_data)->max_eat = number;
-		(*ret_data)->last_argument = TRUE;
+		ret_data->max_eat = number;
+		ret_data->last_argument = TRUE;
 	}
 }
 
@@ -59,7 +59,7 @@ t_bool	check_is_number(char **argv, int i)
 	return (TRUE);
 }
 
-t_bool	try_get_numbers(int argc, char **argv, t_data **ret_data)
+t_bool	try_get_numbers(int argc, char **argv, t_data *ret_data)
 {
 	int i;
 
@@ -75,10 +75,9 @@ t_bool	try_get_numbers(int argc, char **argv, t_data **ret_data)
 	return (TRUE);
 }
 
-int		parse(int argc, char **argv, t_data **ret_data)
+int		parse(int argc, char **argv, t_data *ret_data)
 {
-	(*ret_data)->last_argument = FALSE;
-	(*ret_data)->is_done = FALSE;
+	ret_data->last_argument = FALSE;
 	if (!check_argc(argc))
 	{
 		if (printf("Wrong number of arguments!\n") < 0 ||

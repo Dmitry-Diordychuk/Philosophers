@@ -6,57 +6,72 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 18:48:25 by kdustin           #+#    #+#             */
-/*   Updated: 2021/04/01 14:18:47 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/04/01 19:14:08 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_three.h"
 
-void	*philo_live(void *args)
+int		run_death_time(t_philo *philo)
 {
-	uint64_t		time;
-	t_philo			*philo;
-	int				error;
+	pthread_t		death_timer;
 
-	philo = (t_philo*)args;
-	if (sem_wait(philo->sem_meal) < 0)
-		set_done(ERROR);
-	if (get_time(&time) < 0)
-		set_done(ERROR);
-	philo->last_meal_time = time;
-	if (sem_post(philo->sem_meal) < 0)
-		set_done(ERROR);
-	while (!get_done())
-	{
-		if ((error = mprint(philo->id, "is thinking")) < 0)
-			set_done(ERROR);
-		if ((error = philo_search_forks(philo)) < 0)
-			set_done(ERROR);
-		if (!(error = philo_eat(philo)))
-			return (NULL);
-		error < 0 ? set_done(ERROR) : FALSE;
-		if ((error = philo_sleep(philo)) < 0)
-			set_done(ERROR);
-	}
-	return (NULL);
+	if (pthread_create(&death_timer, NULL, run_death_timer, philo))
+		return (THREAD_ERROR);
+	if (pthread_detach(death_timer))
+		return (THREAD_ERROR);
+	return (0);
 }
 
-t_philo	*invite_philo(void)
+int		philo_live(t_philo philo, t_data data)
+{
+	uint64_t		time;
+	int				error;
+
+	philo.start_time = data.start_time;
+	if (run_death_time(&philo) < 0)
+		return (THREAD_ERROR);
+	if (sem_wait(&philo.sem_meal) < 0)
+		return (SEM_ERROR);
+	if (get_time(&time) < 0)
+		return (TIME_ERROR);
+	philo.last_meal_time = time;
+	if (sem_post(&philo.sem_meal) < 0)
+		return (SEM_ERROR);
+	while (!get_done(&philo))
+	{
+		if ((error = mprint(philo.id, "is thinking", data.start_time,
+		&data.sem_print)) < 0)
+			return (error);
+		if ((error = philo_search_forks(&philo, &data)) < 0)
+			return (error);
+		if ((error = philo_eat(&philo, &data)) <= 0 ||
+		(error = philo_sleep(&philo, &data)) < 0)
+			return (error);
+	}
+	return (0);
+}
+
+t_philo	*invite_philo(t_data data)
 {
 	t_philo		*new_philo;
 	static int	i;
+	sem_t		*temp;
 
 	if (!(new_philo = (t_philo*)malloc(sizeof(t_philo))))
 		return (NULL);
-	if ((new_philo->sem_meal = sem_open("pMeal", O_CREAT | O_EXCL, 644, 1)) ==
-	SEM_FAILED)
+	if ((temp = sem_open("pMeal", O_CREAT | O_EXCL, 644, 1)) == SEM_FAILED)
 	{
 		free(new_philo);
 		return (NULL);
 	}
+	new_philo->sem_meal = *temp;
 	sem_unlink("pMeal");
 	new_philo->id = i + 1;
 	new_philo->meals_counter = 0;
+	new_philo->time_to_die = data.time_to_die;
+	new_philo->sem_done = data.sem_done;
+	new_philo->sem_print = data.sem_print;
 	i++;
 	return (new_philo);
 }
@@ -66,10 +81,8 @@ int		delete_philos(t_philo **philos, size_t n)
 	size_t i;
 
 	i = 0;
-	if (i < n)
+	while (i < n)
 	{
-		i = 0;
-		sem_close(philos[i]->sem_meal);
 		free(philos[i]);
 		i++;
 	}
@@ -77,16 +90,16 @@ int		delete_philos(t_philo **philos, size_t n)
 	return (MEM_ERROR);
 }
 
-int		invite_philos(t_philo ***philos)
+int		invite_philos(t_philo ***philos, t_data data)
 {
 	size_t	i;
 
-	if (!((*philos) = (t_philo**)malloc(sizeof(t_philo*) * g_data->philos_num)))
+	if (!((*philos) = (t_philo**)malloc(sizeof(t_philo*) * data.philos_num)))
 		return (MEM_ERROR);
 	i = 0;
-	while (i < g_data->philos_num)
+	while (i < data.philos_num)
 	{
-		if (!((*philos)[i] = invite_philo()))
+		if (!((*philos)[i] = invite_philo(data)))
 			return (delete_philos((*philos), i));
 		i++;
 	}

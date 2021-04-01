@@ -6,94 +6,100 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 13:33:59 by kdustin           #+#    #+#             */
-/*   Updated: 2021/04/01 14:17:33 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/04/01 18:58:15 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_three.h"
 
-int		exit_handler(int ret, t_philo **philos)
+int		exit_handler(int ret, t_philo **philos, t_data data)
 {
-	usleep(1000);
 	if (philos)
-		delete_philos(philos, g_data->philos_num);
-	if (g_data)
-		free(g_data);
+		delete_philos(philos, data.philos_num);
 	return (ret);
 }
 
-int		start_processes(t_philo **philos)
+int		start_processes(t_philo **philos, t_data data)
 {
 	size_t		i;
-	pthread_t	death_timer;
+	t_philo		in_philo;
 
-	i = 0;
-	get_time(&g_data->start_time);
-	while (i < g_data->philos_num)
+	if (get_time(&data.start_time) < 0)
+		return (TIME_ERROR);
+	i = -1;
+	while (++i < data.philos_num)
 	{
 		philos[i]->pid = fork();
 		if (philos[i]->pid == 0)
 		{
-			if (!(death_timer = (pthread_t)malloc(sizeof(pthread_t))))
-				return (MEM_ERROR);
-			if (pthread_create(&death_timer, NULL, run_death_timer, philos[i]))
-				return (THREAD_ERROR);
-			philo_live(philos[i]);
-			pthread_join(death_timer, NULL);
-			exit(exit_handler(42, philos));
+			in_philo = *(philos[i]);
+			in_philo.sem_print = philos[i]->sem_print;
+			in_philo.sem_done = philos[i]->sem_done;
+			in_philo.sem_meal = philos[i]->sem_meal;
+			delete_philos(philos, data.philos_num);
+			philo_live(in_philo, data);
+			sem_close(&philos[i]->sem_meal);
+			sem_close(&philos[i]->sem_print);
+			sem_close(&philos[i]->sem_done);
+			free(philos[i]);
+			exit(sem_close(&data.sem_forks));
 		}
-		i++;
 	}
 	return (0);
 }
 
-int		wait_processes(t_philo **philos)
+int		wait_processes(t_philo **philos, t_data data)
 {
 	int			status;
 	size_t		i;
 	pthread_t	counter;
 
-	if (g_data->last_argument)
+	if (data.last_argument)
 	{
-		if (pthread_create(&counter, NULL, run_counter, NULL))
+		if (pthread_create(&counter, NULL, run_counter, &data))
 			return (THREAD_ERROR);
 		if (pthread_detach(counter))
 			return (THREAD_ERROR);
 	}
 	i = 0;
-	while (!waitpid(-1, &status, WNOHANG) && !get_done())
+	while (!waitpid(-1, &status, WNOHANG) && !get_done(philos[0]))
 		;
-	i = 0;
-	while (i < g_data->philos_num)
+	i = -1;
+	while (++i < data.philos_num)
 	{
 		kill(philos[i]->pid, SIGKILL);
-		i++;
+		sem_close(&philos[i]->sem_meal);
 	}
-	sem_close(g_data->sem_done);
-	sem_close(g_data->sem_print);
-	sem_close(g_data->sem_forks);
-	sem_close(g_data->sem_ration);
+	sem_close(&data.sem_done);
+	sem_close(&data.sem_print);
+	sem_close(&data.sem_forks);
+	sem_close(&data.sem_ration);
 	return (0);
 }
 
-int		init_sems(void)
+int		init_sems(t_data *data)
 {
-	if ((g_data->sem_done = sem_open("pDone", O_CREAT | O_EXCL, 644, 1)) ==
+	sem_t *temp;
+
+	if ((temp = sem_open("pDone", O_CREAT | O_EXCL, 644, 1)) ==
 	SEM_FAILED)
-		return (exit_handler(SEM_ERROR, NULL));
+		return (SEM_ERROR);
 	sem_unlink("pDone");
-	if ((g_data->sem_print = sem_open("pPrint", O_CREAT | O_EXCL, 644, 1)) ==
-	SEM_FAILED)
-		return (exit_handler(SEM_ERROR, NULL));
+	data->sem_done = *temp;
+	if ((temp = sem_open("pPrint", O_CREAT | O_EXCL, 644, 1)) == SEM_FAILED)
+		return (SEM_ERROR);
 	sem_unlink("pPrint");
-	if ((g_data->sem_forks = sem_open("pFork", O_CREAT | O_EXCL, 644,
-	g_data->philos_num)) == SEM_FAILED)
-		return (exit_handler(SEM_ERROR, NULL));
-	sem_unlink("pFork");
-	if ((g_data->sem_ration = sem_open("pRation", O_CREAT | O_EXCL, 644, 0)) ==
+	data->sem_print = *temp;
+	if ((temp = sem_open("pFork", O_CREAT | O_EXCL, 644, data->philos_num)) ==
 	SEM_FAILED)
-		return (exit_handler(SEM_ERROR, NULL));
+		return (SEM_ERROR);
+	sem_unlink("pFork");
+	data->sem_forks = *temp;
+	if ((temp = sem_open("pRation", O_CREAT | O_EXCL, 644, 0)) ==
+	SEM_FAILED)
+		return (SEM_ERROR);
 	sem_unlink("pRation");
+	data->sem_ration = *temp;
 	return (0);
 }
 
@@ -101,19 +107,18 @@ int		main(int argc, char **argv)
 {
 	t_philo		**philos;
 	int			error;
+	t_data		data;
 
 	philos = NULL;
-	if (!(g_data = (t_data*)malloc(sizeof(t_data))))
-		return (exit_handler(MEM_ERROR, NULL));
-	if ((error = parse(argc, argv, &g_data)) < 0)
-		return (exit_handler(error, NULL));
-	if (init_sems() < 0)
-		return (exit_handler(SEM_ERROR, NULL));
-	if ((error = invite_philos(&philos)) < 0)
-		return (exit_handler(error, NULL));
-	if ((error = start_processes(philos) < 0))
-		return (exit_handler(error, philos));
-	if ((error = wait_processes(philos)) < 0)
-		return (exit_handler(error, philos));
-	return (exit_handler(21, philos));
+	if ((error = parse(argc, argv, &data)) < 0)
+		return (exit_handler(error, NULL, data));
+	if (init_sems(&data) < 0)
+		return (exit_handler(SEM_ERROR, NULL, data));
+	if ((error = invite_philos(&philos, data)) < 0)
+		return (exit_handler(error, NULL, data));
+	if ((error = start_processes(philos, data) < 0))
+		return (exit_handler(error, philos, data));
+	if ((error = wait_processes(philos, data)) < 0)
+		return (exit_handler(error, philos, data));
+	return (exit_handler(21, philos, data));
 }

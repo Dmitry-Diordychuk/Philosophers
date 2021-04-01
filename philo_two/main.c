@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 13:33:59 by kdustin           #+#    #+#             */
-/*   Updated: 2021/04/01 14:17:26 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/04/01 18:58:45 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,8 @@ int		start_threads(t_philo **philos, pthread_t **death_timers)
 {
 	size_t		i;
 
-	if (!(*death_timers = (pthread_t*)malloc(sizeof(pthread_t))))
+	if (!(*death_timers = (pthread_t*)malloc(sizeof(pthread_t) *
+	g_data->philos_num)))
 		return (MEM_ERROR);
 	i = 0;
 	if (get_time(&g_data->start_time) < 0)
@@ -52,10 +53,10 @@ int		wait_threads(pthread_t *death_timers)
 
 int		exit_handler(int ret, t_philo **philos, pthread_t *dts)
 {
-	usleep(1000);
 	if (philos)
 		delete_philos(philos, g_data->philos_num);
-	free(dts);
+	if (dts)
+		free(dts);
 	if (g_data)
 		free(g_data);
 	return (ret);
@@ -85,6 +86,7 @@ int		main(int argc, char **argv)
 	int			error;
 
 	philos = NULL;
+	death_timers = NULL;
 	if (!(g_data = (t_data*)malloc(sizeof(t_data))))
 		return (exit_handler(MEM_ERROR, NULL, NULL));
 	if ((error = parse(argc, argv, &g_data)) < 0)

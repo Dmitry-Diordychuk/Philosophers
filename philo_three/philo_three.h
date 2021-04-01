@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 13:33:48 by kdustin           #+#    #+#             */
-/*   Updated: 2021/04/01 13:45:44 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/04/01 17:14:28 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,14 +50,13 @@ typedef struct		s_data
 	uint64_t		max_eat;
 	t_bool			last_argument;
 	uint64_t		start_time;
-	sem_t			*sem_done;
-	t_bool			is_done;
-	sem_t			*sem_print;
-	sem_t			*sem_forks;
-	sem_t			*sem_ration;
+	sem_t			sem_done;
+	sem_t			sem_print;
+	sem_t			sem_forks;
+	sem_t			sem_ration;
 }					t_data;
 
-t_data				*g_data;
+t_bool g_is_done;
 
 /*
 **	Libft functions
@@ -71,7 +70,7 @@ int					get_time(uint64_t *result);
 **	Parse
 */
 
-int					parse(int argc, char **argv, t_data **ret_data);
+int					parse(int argc, char **argv, t_data *ret_data);
 
 /*
 **	Philosopher
@@ -88,30 +87,35 @@ typedef struct		s_philo
 {
 	size_t			id;
 	pid_t			pid;
-	sem_t			*sem_meal;
+	sem_t			sem_meal;
 	uint64_t		last_meal_time;
 	size_t			meals_counter;
+	uint64_t		time_to_die;
+	sem_t			sem_done;
+	uint64_t		start_time;
+	sem_t			sem_print;
 }					t_philo;
 
-t_philo				*invite_philo();
-int					invite_philos(t_philo ***philos);
+t_philo				*invite_philo(t_data data);
+int					invite_philos(t_philo ***philos, t_data data);
 int					delete_philos(t_philo **philos, size_t n);
-void				*philo_live(void *args);
+int					philo_live(t_philo philo, t_data data);
 
 /*
 **	Print
 */
 
-int					mprint(int id, char *action);
+int					mprint(int id, char *action, uint64_t start_time,
+													sem_t *sem_print);
 
 /*
 **	Action
 */
 
-int					philo_search_forks(t_philo *philo);
-int					put_forks_down();
-int					philo_eat(t_philo *philo);
-int					philo_sleep(t_philo *philo);
+int					philo_search_forks(t_philo *philo, t_data *data);
+int					put_forks_down(t_data *data);
+int					philo_eat(t_philo *philo, t_data *data);
+int					philo_sleep(t_philo *philo, t_data *data);
 
 /*
 **	Death timer
@@ -124,10 +128,12 @@ void				*run_counter(void *args);
 **	Get set
 */
 
-int					get_done();
-int					set_done(t_bool bool);
+int					get_done(t_philo *philo);
+int					set_done(t_bool bool, sem_t *sem_done);
 uint64_t			get_meal_time(t_philo *philo);
 int					set_meal(t_philo *philo);
-t_bool				done_counter();
+t_bool				done_counter(t_data *data);
+
+int					exit_handler(int ret, t_philo **philos, t_data data);
 
 #endif
