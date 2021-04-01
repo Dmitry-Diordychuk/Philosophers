@@ -6,11 +6,11 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 18:48:25 by kdustin           #+#    #+#             */
-/*   Updated: 2021/04/01 13:45:49 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/04/01 14:18:47 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "philo_one.h"
+#include "philo_three.h"
 
 void	*philo_live(void *args)
 {
@@ -19,12 +19,12 @@ void	*philo_live(void *args)
 	int				error;
 
 	philo = (t_philo*)args;
-	if (pthread_mutex_lock(&philo->mutex_meal))
+	if (sem_wait(philo->sem_meal) < 0)
 		set_done(ERROR);
 	if (get_time(&time) < 0)
 		set_done(ERROR);
 	philo->last_meal_time = time;
-	if (pthread_mutex_unlock(&philo->mutex_meal))
+	if (sem_post(philo->sem_meal) < 0)
 		set_done(ERROR);
 	while (!get_done())
 	{
@@ -33,7 +33,7 @@ void	*philo_live(void *args)
 		if ((error = philo_search_forks(philo)) < 0)
 			set_done(ERROR);
 		if (!(error = philo_eat(philo)))
-			break ;
+			return (NULL);
 		error < 0 ? set_done(ERROR) : FALSE;
 		if ((error = philo_sleep(philo)) < 0)
 			set_done(ERROR);
@@ -48,14 +48,14 @@ t_philo	*invite_philo(void)
 
 	if (!(new_philo = (t_philo*)malloc(sizeof(t_philo))))
 		return (NULL);
-	if (pthread_mutex_init(&new_philo->mutex_meal, NULL))
+	if ((new_philo->sem_meal = sem_open("pMeal", O_CREAT | O_EXCL, 644, 1)) ==
+	SEM_FAILED)
 	{
 		free(new_philo);
 		return (NULL);
 	}
+	sem_unlink("pMeal");
 	new_philo->id = i + 1;
-	new_philo->left_hand = EMPTY;
-	new_philo->right_hand = EMPTY;
 	new_philo->meals_counter = 0;
 	i++;
 	return (new_philo);
@@ -69,7 +69,7 @@ int		delete_philos(t_philo **philos, size_t n)
 	if (i < n)
 	{
 		i = 0;
-		pthread_mutex_destroy(&philos[i]->mutex_meal);
+		sem_close(philos[i]->sem_meal);
 		free(philos[i]);
 		i++;
 	}
