@@ -6,13 +6,13 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/02 17:22:00 by kdustin           #+#    #+#             */
-/*   Updated: 2021/04/02 17:45:35 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/04/02 17:58:44 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_three.h"
 
-int		fork_error(t_philo **philos, t_data data, size_t i)
+static int	fork_error(t_philo **philos, t_data data, size_t i)
 {
 	while (--i > 0)
 	{
@@ -28,7 +28,7 @@ int		fork_error(t_philo **philos, t_data data, size_t i)
 	return (ERROR);
 }
 
-int		fork_main(t_philo **philos, t_data data, size_t i)
+static int	fork_main(t_philo **philos, t_data data, size_t i)
 {
 	int error;
 
@@ -49,7 +49,7 @@ int		fork_main(t_philo **philos, t_data data, size_t i)
 	exit(0);
 }
 
-int		start_processes(t_philo **philos, t_data data)
+int			start_processes(t_philo **philos, t_data data)
 {
 	size_t		i;
 
@@ -67,7 +67,7 @@ int		start_processes(t_philo **philos, t_data data)
 	return (0);
 }
 
-int		start_threads(t_data data)
+int			start_threads(t_data data)
 {
 	pthread_t	counter;
 
@@ -85,7 +85,7 @@ int		start_threads(t_data data)
 	return (0);
 }
 
-int		wait_processes(t_philo **philos, t_data data)
+int			wait_processes(t_philo **philos, t_data data)
 {
 	int			status;
 	size_t		i;

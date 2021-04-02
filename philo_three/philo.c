@@ -6,13 +6,13 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 18:48:25 by kdustin           #+#    #+#             */
-/*   Updated: 2021/04/02 17:48:39 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/04/02 17:54:47 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_three.h"
 
-int		start_threads(t_philo *philo)
+static int	start_threads(t_philo *philo)
 {
 	pthread_t		thread;
 
@@ -23,7 +23,7 @@ int		start_threads(t_philo *philo)
 	return (0);
 }
 
-int		philo_live(t_philo *philo)
+int			philo_live(t_philo *philo)
 {
 	int				error;
 
@@ -52,7 +52,7 @@ int		philo_live(t_philo *philo)
 	return (ERROR);
 }
 
-t_philo	*invite_philo(void)
+t_philo		*invite_philo(void)
 {
 	t_philo		*new_philo;
 	static int	i;
@@ -72,7 +72,7 @@ t_philo	*invite_philo(void)
 	return (new_philo);
 }
 
-int		delete_philos(t_philo **philos, size_t n)
+int			delete_philos(t_philo **philos, size_t n)
 {
 	size_t i;
 
@@ -87,7 +87,7 @@ int		delete_philos(t_philo **philos, size_t n)
 	return (MEM_ERROR);
 }
 
-int		invite_philos(t_philo ***philos)
+int			invite_philos(t_philo ***philos)
 {
 	size_t	i;
 
