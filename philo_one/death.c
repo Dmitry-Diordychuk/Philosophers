@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/30 19:44:48 by kdustin           #+#    #+#             */
-/*   Updated: 2021/04/01 17:59:15 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/04/02 01:40:38 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ void		*run_death_timer(void *args)
 	t_philo		*philo;
 
 	philo = (t_philo*)args;
-	while (INFINITE_LOOP)
+	while (!go_sleep(1000))
 	{
 		if (get_meal_time(philo) > g_data->time_to_die)
 		{
@@ -38,8 +38,6 @@ void		*run_death_timer(void *args)
 			pthread_join(philo->thread, NULL);
 			return (NULL);
 		}
-		if (usleep(1000) < 0)
-			set_done(ERROR);
 		if (get_done() || get_done_counter() == g_data->philos_num)
 		{
 			set_done(TRUE);

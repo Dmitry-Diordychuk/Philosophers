@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 18:48:25 by kdustin           #+#    #+#             */
-/*   Updated: 2021/04/01 18:48:16 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/04/02 17:07:16 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,15 +26,15 @@ void	*philo_live(void *args)
 	philo->last_meal_time = time;
 	if (pthread_mutex_unlock(&philo->mutex_meal))
 		set_done(ERROR);
+	philo->id % 2 ? go_sleep(1000) : FALSE;
 	while (!get_done())
 	{
 		if ((error = mprint(philo->id, "is thinking")) < 0)
 			set_done(ERROR);
 		if ((error = philo_search_forks(philo)) < 0)
 			set_done(ERROR);
-		if (!(error = philo_eat(philo)))
-			break ;
-		error < 0 ? set_done(ERROR) : FALSE;
+		if ((error = philo_eat(philo)) <= 0)
+			set_done(ERROR);
 		if ((error = philo_sleep(philo)) < 0)
 			set_done(ERROR);
 	}

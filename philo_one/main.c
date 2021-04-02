@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 13:33:59 by kdustin           #+#    #+#             */
-/*   Updated: 2021/04/01 18:54:36 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/04/02 01:56:47 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,6 @@ int		wait_threads(pthread_t *death_timers)
 
 int		exit_handler(int ret, t_philo **philos, t_fork **forks, pthread_t *dts)
 {
-	usleep(1000);
 	if (philos)
 		delete_philos(philos, g_data->philos_num);
 	if (forks)

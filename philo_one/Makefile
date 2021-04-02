@@ -6,11 +6,11 @@
 #    By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/27 13:43:49 by kdustin           #+#    #+#              #
-#    Updated: 2021/04/01 18:48:59 by kdustin          ###   ########.fr        #
+#    Updated: 2021/04/02 01:52:30 by kdustin          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-CFLAGS = -Wall -Wextra -Werror -pthread
+CFLAGS = -Wall -Wextra -Werror -pthread -g
 
 NAME = philo_one
 

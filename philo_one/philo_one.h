@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 13:33:48 by kdustin           #+#    #+#             */
-/*   Updated: 2021/04/01 13:45:48 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/04/02 01:46:39 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,7 @@ t_data				*g_data;
 int					ft_isdigit(int c);
 uint64_t			ft_atoi(const char *str);
 int					get_time(uint64_t *result);
+int					go_sleep(useconds_t usec);
 
 /*
 **	Parse

@@ -6,11 +6,11 @@
 #    By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/27 13:43:49 by kdustin           #+#    #+#              #
-#    Updated: 2021/04/01 18:50:03 by kdustin          ###   ########.fr        #
+#    Updated: 2021/04/01 20:40:41 by kdustin          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-CFLAGS = -Wall -Wextra -Werror -pthread
+CFLAGS = -Wall -Wextra -Werror -pthread -g
 
 NAME = philo_two
 

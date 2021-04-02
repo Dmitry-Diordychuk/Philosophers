@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 13:33:48 by kdustin           #+#    #+#             */
-/*   Updated: 2021/04/01 17:14:28 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/04/02 17:31:27 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,37 +41,6 @@ typedef int			t_bool;
 # define ERROR			-10
 # define INFINITE_LOOP	1
 
-typedef struct		s_data
-{
-	size_t			philos_num;
-	uint64_t		time_to_die;
-	uint64_t		time_to_eat;
-	uint64_t		time_to_sleep;
-	uint64_t		max_eat;
-	t_bool			last_argument;
-	uint64_t		start_time;
-	sem_t			sem_done;
-	sem_t			sem_print;
-	sem_t			sem_forks;
-	sem_t			sem_ration;
-}					t_data;
-
-t_bool g_is_done;
-
-/*
-**	Libft functions
-*/
-
-int					ft_isdigit(int c);
-uint64_t			ft_atoi(const char *str);
-int					get_time(uint64_t *result);
-
-/*
-**	Parse
-*/
-
-int					parse(int argc, char **argv, t_data *ret_data);
-
 /*
 **	Philosopher
 */
@@ -86,54 +55,94 @@ int					parse(int argc, char **argv, t_data *ret_data);
 typedef struct		s_philo
 {
 	size_t			id;
-	pid_t			pid;
-	sem_t			sem_meal;
+	int				pid;
+	sem_t			*sem_meal;
 	uint64_t		last_meal_time;
 	size_t			meals_counter;
-	uint64_t		time_to_die;
-	sem_t			sem_done;
-	uint64_t		start_time;
-	sem_t			sem_print;
 }					t_philo;
 
-t_philo				*invite_philo(t_data data);
-int					invite_philos(t_philo ***philos, t_data data);
+t_philo				*invite_philo();
+int					invite_philos(t_philo ***philos);
 int					delete_philos(t_philo **philos, size_t n);
-int					philo_live(t_philo philo, t_data data);
+int					philo_live(t_philo *philo);
+
+/*
+**	Data
+*/
+
+typedef struct		s_data
+{
+	size_t			philos_num;
+	uint64_t		time_to_die;
+	uint64_t		time_to_eat;
+	uint64_t		time_to_sleep;
+	uint64_t		max_eat;
+	t_bool			last_argument;
+	uint64_t		start_time;
+	sem_t			*sem_done;
+	t_bool			is_done;
+	sem_t			*sem_print;
+	sem_t			*sem_ration;
+	sem_t			*sem_death;
+	sem_t			*sem_forks;
+	t_philo			**philos;
+}					t_data;
+
+t_data				*g_data;
+
+/*
+**	Libft functions
+*/
+
+int					ft_isdigit(int c);
+uint64_t			ft_atoi(const char *str);
+int					get_time(uint64_t *result);
+int					go_sleep(useconds_t usec);
+
+/*
+**	Parse
+*/
+
+int					parse(int argc, char **argv, t_data *ret_data);
 
 /*
 **	Print
 */
 
-int					mprint(int id, char *action, uint64_t start_time,
-													sem_t *sem_print);
+int					mprint(int id, char *action);
 
 /*
 **	Action
 */
 
-int					philo_search_forks(t_philo *philo, t_data *data);
-int					put_forks_down(t_data *data);
-int					philo_eat(t_philo *philo, t_data *data);
-int					philo_sleep(t_philo *philo, t_data *data);
+int					philo_search_forks(t_philo *philo);
+int					put_forks_down();
+int					philo_eat(t_philo *philo);
+int					philo_sleep(t_philo *philo);
 
 /*
 **	Death timer
 */
 
 void				*run_death_timer(void *args);
+void				*run_death_detector(void *args);
 void				*run_counter(void *args);
 
 /*
 **	Get set
 */
 
-int					get_done(t_philo *philo);
-int					set_done(t_bool bool, sem_t *sem_done);
+int					get_done();
+int					set_done(t_bool bool);
 uint64_t			get_meal_time(t_philo *philo);
 int					set_meal(t_philo *philo);
-t_bool				done_counter(t_data *data);
+t_bool				done_counter();
 
-int					exit_handler(int ret, t_philo **philos, t_data data);
+/*
+**	Processe
+*/
+
+int					start_processes(t_philo **philos, t_data data);
+int					wait_processes(t_philo **philos, t_data data);
 
 #endif

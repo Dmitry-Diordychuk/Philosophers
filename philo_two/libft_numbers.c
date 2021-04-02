@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   libft_numbers.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
+/*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 14:46:05 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/30 23:43:52 by marvin           ###   ########.fr       */
+/*   Updated: 2021/04/02 17:44:58 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,25 @@ int				get_time(uint64_t *result)
 
 	if (gettimeofday(&time, NULL) < 0)
 		return (TIME_ERROR);
-	*result = (time.tv_sec * 1000) + (time.tv_usec * 0.001);
+	*result = (time.tv_sec * (uint64_t)1000) + (time.tv_usec / (uint64_t)1000);
+	return (0);
+}
+
+int				go_sleep(useconds_t usec)
+{
+	struct timeval	start;
+	struct timeval	next;
+
+	if (gettimeofday(&start, NULL) < 0)
+		return (TIME_ERROR);
+	if (gettimeofday(&next, NULL) < 0)
+		return (TIME_ERROR);
+	while ((next.tv_sec - start.tv_sec) * (uint64_t)1000000 +
+										(next.tv_usec - start.tv_usec) < usec)
+	{
+		usleep(1);
+		if (gettimeofday(&next, NULL) < 0)
+			return (TIME_ERROR);
+	}
 	return (0);
 }

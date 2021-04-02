@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 18:48:25 by kdustin           #+#    #+#             */
-/*   Updated: 2021/04/01 18:48:28 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/04/02 01:36:22 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,27 +14,26 @@
 
 void	*philo_live(void *args)
 {
-	uint64_t		time;
 	t_philo			*philo;
 	int				error;
 
 	philo = (t_philo*)args;
 	if (sem_wait(philo->sem_meal) < 0)
 		set_done(ERROR);
-	if (get_time(&time) < 0)
+	if (get_time(&philo->last_meal_time) < 0)
 		set_done(ERROR);
-	philo->last_meal_time = time;
 	if (sem_post(philo->sem_meal) < 0)
 		set_done(ERROR);
+	if (philo->id % 2)
+		go_sleep(1000);
 	while (!get_done())
 	{
 		if ((error = mprint(philo->id, "is thinking")) < 0)
 			set_done(ERROR);
 		if ((error = philo_search_forks(philo)) < 0)
 			set_done(ERROR);
-		if (!(error = philo_eat(philo)))
-			break ;
-		error < 0 ? set_done(ERROR) : FALSE;
+		if ((error = philo_eat(philo)) <= 0)
+			set_done(ERROR);
 		if ((error = philo_sleep(philo)) < 0)
 			set_done(ERROR);
 	}
