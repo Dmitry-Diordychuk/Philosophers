@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 13:33:59 by kdustin           #+#    #+#             */
-/*   Updated: 2021/04/02 01:35:51 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/04/03 01:49:44 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,6 @@ int		wait_threads(pthread_t *death_timers)
 			return (THREAD_ERROR);
 		i++;
 	}
-	sem_close(g_data->sem_done);
 	sem_close(g_data->sem_print);
 	sem_close(g_data->sem_forks);
 	return (0);
@@ -64,10 +63,6 @@ int		exit_handler(int ret, t_philo **philos, pthread_t *dts)
 
 int		init_sems(void)
 {
-	if ((g_data->sem_done = sem_open("pDone", O_CREAT | O_EXCL, 644, 1)) ==
-	SEM_FAILED)
-		return (SEM_ERROR);
-	sem_unlink("pDone");
 	if ((g_data->sem_print = sem_open("pPrint", O_CREAT | O_EXCL, 644, 1)) ==
 	SEM_FAILED)
 		return (SEM_ERROR);

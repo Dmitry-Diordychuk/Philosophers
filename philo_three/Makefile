@@ -6,7 +6,7 @@
 #    By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/27 13:43:49 by kdustin           #+#    #+#              #
-#    Updated: 2021/04/02 17:35:22 by kdustin          ###   ########.fr        #
+#    Updated: 2021/04/03 02:09:48 by kdustin          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,7 +16,7 @@ NAME = philo_three
 
 INC = philo_three.h
 SRCS = main.c libft_numbers.c parse.c print.c philo.c action.c death.c \
-		get_set.c processe.c
+		processe.c
 OBJS = $(SRCS:.c=.o)
 
 all: $(NAME)

@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 18:48:25 by kdustin           #+#    #+#             */
-/*   Updated: 2021/04/02 17:07:16 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/04/03 01:46:06 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,29 +14,17 @@
 
 void	*philo_live(void *args)
 {
-	uint64_t		time;
 	t_philo			*philo;
-	int				error;
 
 	philo = (t_philo*)args;
-	if (pthread_mutex_lock(&philo->mutex_meal))
-		set_done(ERROR);
-	if (get_time(&time) < 0)
-		set_done(ERROR);
-	philo->last_meal_time = time;
-	if (pthread_mutex_unlock(&philo->mutex_meal))
-		set_done(ERROR);
-	philo->id % 2 ? go_sleep(1000) : FALSE;
-	while (!get_done())
+	get_time(&philo->last_meal_time);
+	if (philo->id % 2)
+		usleep(3000);
+	while (!g_data->is_done)
 	{
-		if ((error = mprint(philo->id, "is thinking")) < 0)
-			set_done(ERROR);
-		if ((error = philo_search_forks(philo)) < 0)
-			set_done(ERROR);
-		if ((error = philo_eat(philo)) <= 0)
-			set_done(ERROR);
-		if ((error = philo_sleep(philo)) < 0)
-			set_done(ERROR);
+		philo_think(philo);
+		philo_eat(philo);
+		philo_sleep(philo);
 	}
 	return (NULL);
 }
@@ -48,11 +36,6 @@ t_philo	*invite_philo(void)
 
 	if (!(new_philo = (t_philo*)malloc(sizeof(t_philo))))
 		return (NULL);
-	if (pthread_mutex_init(&new_philo->mutex_meal, NULL))
-	{
-		free(new_philo);
-		return (NULL);
-	}
 	new_philo->id = i + 1;
 	new_philo->left_hand = EMPTY;
 	new_philo->right_hand = EMPTY;
@@ -68,7 +51,6 @@ int		delete_philos(t_philo **philos, size_t n)
 	i = 0;
 	while (i < n)
 	{
-		pthread_mutex_destroy(&philos[i]->mutex_meal);
 		free(philos[i]);
 		i++;
 	}

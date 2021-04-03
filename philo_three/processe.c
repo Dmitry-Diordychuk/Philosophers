@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/02 17:22:00 by kdustin           #+#    #+#             */
-/*   Updated: 2021/04/02 17:58:44 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/04/03 02:30:27 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,8 @@
 static int	fork_error(t_philo **philos, t_data data, size_t i)
 {
 	while (--i > 0)
-	{
 		kill(philos[i]->pid, SIGKILL);
-		sem_close(philos[i]->sem_meal);
-	}
 	kill(philos[i]->pid, SIGKILL);
-	sem_close(philos[i]->sem_meal);
-	sem_close(data.sem_done);
 	sem_close(data.sem_print);
 	sem_close(data.sem_forks);
 	sem_close(data.sem_ration);
@@ -39,9 +34,6 @@ static int	fork_main(t_philo **philos, t_data data, size_t i)
 	g_data->philos = philos;
 	if ((error = philo_live(philos[i])) < 0)
 		exit(error);
-	i = -1;
-	while (++i < g_data->philos_num)
-		sem_close(philos[i]->sem_meal);
 	delete_philos(philos, g_data->philos_num);
 	sem_close(g_data->sem_forks);
 	sem_close(g_data->sem_print);
@@ -67,10 +59,13 @@ int			start_processes(t_philo **philos, t_data data)
 	return (0);
 }
 
-int			start_threads(t_data data)
+int			wait_processes(t_philo **philos, t_data data)
 {
+	int			status;
 	pthread_t	counter;
+	size_t		i;
 
+	g_data->is_done = FALSE;
 	if (data.last_argument)
 	{
 		if (pthread_create(&counter, NULL, run_counter, NULL))
@@ -82,26 +77,11 @@ int			start_threads(t_data data)
 		return (THREAD_ERROR);
 	if (pthread_detach(counter))
 		return (THREAD_ERROR);
-	return (0);
-}
-
-int			wait_processes(t_philo **philos, t_data data)
-{
-	int			status;
-	size_t		i;
-
-	g_data->is_done = FALSE;
-	if (start_threads(data) < 0)
-		return (THREAD_ERROR);
-	while (!waitpid(-1, &status, WNOHANG) && !get_done())
+	while (!waitpid(-1, &status, WNOHANG) && !g_data->is_done)
 		;
 	i = -1;
-	while (++i < data.philos_num)
-	{
+	while (++i < g_data->philos_num)
 		kill(philos[i]->pid, SIGKILL);
-		sem_close(philos[i]->sem_meal);
-	}
-	sem_close(data.sem_done);
 	sem_close(data.sem_print);
 	sem_close(data.sem_forks);
 	sem_close(data.sem_ration);

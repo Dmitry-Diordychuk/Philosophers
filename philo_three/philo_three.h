@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 13:33:48 by kdustin           #+#    #+#             */
-/*   Updated: 2021/04/02 17:31:27 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/04/03 02:16:10 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,18 +45,10 @@ typedef int			t_bool;
 **	Philosopher
 */
 
-# define EMPTY 0
-# define FORK 1
-# define LEFT 2
-# define RIGHT 3
-# define ALLOW 4
-# define DENY 5
-
 typedef struct		s_philo
 {
 	size_t			id;
 	int				pid;
-	sem_t			*sem_meal;
 	uint64_t		last_meal_time;
 	size_t			meals_counter;
 }					t_philo;
@@ -79,7 +71,6 @@ typedef struct		s_data
 	uint64_t		max_eat;
 	t_bool			last_argument;
 	uint64_t		start_time;
-	sem_t			*sem_done;
 	t_bool			is_done;
 	sem_t			*sem_print;
 	sem_t			*sem_ration;
@@ -97,7 +88,6 @@ t_data				*g_data;
 int					ft_isdigit(int c);
 uint64_t			ft_atoi(const char *str);
 int					get_time(uint64_t *result);
-int					go_sleep(useconds_t usec);
 
 /*
 **	Parse
@@ -109,14 +99,13 @@ int					parse(int argc, char **argv, t_data *ret_data);
 **	Print
 */
 
-int					mprint(int id, char *action);
+int					mprint(int id, char *action, int n);
 
 /*
 **	Action
 */
 
-int					philo_search_forks(t_philo *philo);
-int					put_forks_down();
+int					philo_think(t_philo *philo);
 int					philo_eat(t_philo *philo);
 int					philo_sleep(t_philo *philo);
 
@@ -127,16 +116,6 @@ int					philo_sleep(t_philo *philo);
 void				*run_death_timer(void *args);
 void				*run_death_detector(void *args);
 void				*run_counter(void *args);
-
-/*
-**	Get set
-*/
-
-int					get_done();
-int					set_done(t_bool bool);
-uint64_t			get_meal_time(t_philo *philo);
-int					set_meal(t_philo *philo);
-t_bool				done_counter();
 
 /*
 **	Processe

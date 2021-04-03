@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 13:33:59 by kdustin           #+#    #+#             */
-/*   Updated: 2021/04/02 17:43:38 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/04/03 02:16:24 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,10 +21,6 @@ int		exit_handler(int ret, t_philo **philos)
 
 int		init_sems(t_data *data)
 {
-	if ((data->sem_done = sem_open("pDone", O_CREAT | O_EXCL, 644, 1)) ==
-	SEM_FAILED)
-		return (SEM_ERROR);
-	sem_unlink("pDone");
 	if ((data->sem_print = sem_open("pPrint", O_CREAT | O_EXCL, 644, 1)) ==
 	SEM_FAILED)
 		return (SEM_ERROR);

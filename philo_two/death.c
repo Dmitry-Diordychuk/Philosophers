@@ -6,20 +6,20 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/30 19:44:48 by kdustin           #+#    #+#             */
-/*   Updated: 2021/04/02 01:39:33 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/04/03 01:52:01 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_two.h"
 
-size_t		get_done_counter(void)
+uint64_t	get_meal_time(t_philo *philo)
 {
-	size_t counter;
+	uint64_t	result;
+	uint64_t	cur_time;
 
-	sem_wait(g_data->sem_done);
-	counter = g_data->done_counter;
-	sem_post(g_data->sem_done);
-	return (counter);
+	get_time(&cur_time);
+	result = cur_time - philo->last_meal_time;
+	return (result);
 }
 
 void		*run_death_timer(void *args)
@@ -27,18 +27,18 @@ void		*run_death_timer(void *args)
 	t_philo		*philo;
 
 	philo = (t_philo*)args;
-	while (!go_sleep(1000))
+	while (!usleep(1000))
 	{
 		if (get_meal_time(philo) > g_data->time_to_die)
 		{
-			mprint(philo->id, "dead");
-			set_done(TRUE);
+			mprint(philo->id, "dead", 1);
+			g_data->is_done = TRUE;
 			pthread_join(philo->thread, NULL);
 			return (NULL);
 		}
-		if (get_done() || get_done_counter() == g_data->philos_num)
+		if (g_data->is_done || g_data->done_counter == g_data->philos_num)
 		{
-			set_done(TRUE);
+			g_data->is_done = TRUE;
 			pthread_join(philo->thread, NULL);
 			return (NULL);
 		}

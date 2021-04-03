@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 18:48:25 by kdustin           #+#    #+#             */
-/*   Updated: 2021/04/02 17:54:47 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/04/03 02:26:36 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,18 +31,14 @@ int			philo_live(t_philo *philo)
 		return (THREAD_ERROR);
 	if (philo == NULL)
 		return (MEM_ERROR);
-	if (sem_wait(philo->sem_meal) < 0)
-		return (SEM_ERROR);
 	if (get_time(&philo->last_meal_time) < 0)
 		return (TIME_ERROR);
-	if (sem_post(philo->sem_meal) < 0)
-		return (SEM_ERROR);
-	philo->id % 2 ? go_sleep(1000) : FALSE;
-	while (!get_done())
+	if (philo->id % 2)
+		if (usleep(3000))
+			return (TIME_ERROR);
+	while (!g_data->is_done)
 	{
-		if ((error = mprint(philo->id, "is thinking")) < 0)
-			return (error);
-		if ((error = philo_search_forks(philo)) < 0)
+		if ((error = philo_think(philo)) < 0)
 			return (error);
 		if ((error = philo_eat(philo)) <= 0)
 			return (error);
@@ -59,13 +55,6 @@ t_philo		*invite_philo(void)
 
 	if (!(new_philo = (t_philo*)malloc(sizeof(t_philo))))
 		return (NULL);
-	if ((new_philo->sem_meal = sem_open("pMeal", O_CREAT | O_EXCL, 644, 1)) ==
-	SEM_FAILED)
-	{
-		free(new_philo);
-		return (NULL);
-	}
-	sem_unlink("pMeal");
 	new_philo->id = i + 1;
 	new_philo->meals_counter = 0;
 	i++;
@@ -79,7 +68,6 @@ int			delete_philos(t_philo **philos, size_t n)
 	i = 0;
 	while (i < n)
 	{
-		sem_close(philos[i]->sem_meal);
 		free(philos[i]);
 		i++;
 	}

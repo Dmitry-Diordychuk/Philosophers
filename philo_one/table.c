@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   table.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
+/*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/31 16:30:17 by kdustin           #+#    #+#             */
-/*   Updated: 2021/03/31 19:44:24 by marvin           ###   ########.fr       */
+/*   Updated: 2021/04/03 01:29:22 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,34 @@ t_fork	*serve_fork(void)
 	return (new_fork);
 }
 
+int		init_pair(t_philo **philos, size_t n)
+{
+	size_t i;
+
+	i = 0;
+	while (i < g_data->philos_num)
+	{
+		if (philos[i]->id % 2 == 1)
+		{
+			if (pthread_mutex_init(
+			&philos[(i + 1) % n]->right_fork->mutex_pair_one, NULL))
+				return (MUTEX_ERROR);
+			philos[i]->left_fork->mutex_pair_one =
+								philos[(i + 1) % n]->right_fork->mutex_pair_one;
+		}
+		else
+		{
+			if (pthread_mutex_init(
+			&philos[(i + 1) % n]->right_fork->mutex_pair_two, NULL))
+				return (MUTEX_ERROR);
+			philos[i]->left_fork->mutex_pair_one =
+								philos[(i + 1) % n]->right_fork->mutex_pair_one;
+		}
+		i++;
+	}
+	return (0);
+}
+
 int		set_table(t_philo **philos, t_fork ***forks)
 {
 	size_t	i;
@@ -64,5 +92,6 @@ int		set_table(t_philo **philos, t_fork ***forks)
 		philos[(i + 1) % n]->left_fork = (*forks)[i];
 		i++;
 	}
+	init_pair(philos, n);
 	return (0);
 }

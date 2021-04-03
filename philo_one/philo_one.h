@@ -6,7 +6,7 @@
 /*   By: kdustin <kdustin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/27 13:33:48 by kdustin           #+#    #+#             */
-/*   Updated: 2021/04/02 01:46:39 by kdustin          ###   ########.fr       */
+/*   Updated: 2021/04/03 01:14:42 by kdustin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,6 @@ t_data				*g_data;
 int					ft_isdigit(int c);
 uint64_t			ft_atoi(const char *str);
 int					get_time(uint64_t *result);
-int					go_sleep(useconds_t usec);
 
 /*
 **	Parse
@@ -75,10 +74,10 @@ int					parse(int argc, char **argv, t_data **ret_data);
 
 # define EMPTY 0
 # define FORK 1
-# define LEFT 2
-# define RIGHT 3
-# define ALLOW 4
-# define DENY 5
+# define ALLOW 2
+# define DENY 3
+# define MOVE_ON 4
+# define REQUEST 5
 
 typedef int			t_slot;
 
@@ -87,6 +86,8 @@ typedef struct		s_fork
 	size_t			id;
 	t_slot			slot;
 	pthread_mutex_t	mutex;
+	pthread_mutex_t	mutex_pair_one;
+	pthread_mutex_t	mutex_pair_two;
 }					t_fork;
 
 typedef t_bool		t_hand;
@@ -95,7 +96,6 @@ typedef struct		s_philo
 {
 	size_t			id;
 	pthread_t		thread;
-	pthread_mutex_t	mutex_meal;
 	uint64_t		last_meal_time;
 	size_t			meals_counter;
 	t_hand			left_hand;
@@ -121,14 +121,13 @@ int					set_table(t_philo **philos, t_fork ***forks);
 **	Print
 */
 
-int					mprint(int id, char *action);
+int					mprint(int id, char *action, int n);
 
 /*
 **	Action
 */
 
-int					philo_search_forks(t_philo *philo);
-int					put_forks_down(t_philo *philo);
+int					philo_think(t_philo *philo);
 int					philo_eat(t_philo *philo);
 int					philo_sleep(t_philo *philo);
 
@@ -137,15 +136,5 @@ int					philo_sleep(t_philo *philo);
 */
 
 void				*run_death_timer(void *args);
-
-/*
-**	Get set
-*/
-
-int					get_done();
-int					set_done(t_bool bool);
-uint64_t			get_meal_time(t_philo *philo);
-int					set_meal(t_philo *philo);
-t_bool				done_counter();
 
 #endif
